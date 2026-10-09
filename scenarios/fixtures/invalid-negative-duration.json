@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-duracion-negativa",
+  "name": "Fixture con duración negativa",
+  "description": "Violación única: warmupSeconds.value es negativo; una duración de simulación en segundos nunca puede ser negativa",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [],
+  "zones": [],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [
+    {
+      "id": "eq_plancha-01",
+      "kind": "griddle",
+      "capacity": 4,
+      "initialState": "off",
+      "warmupSeconds": {
+        "value": -30,
+        "unit": "s",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "usageRules": []
+    }
+  ],
+  "orders": [],
+  "recipes": [],
+  "inventory": [],
+  "parameters": {}
+}

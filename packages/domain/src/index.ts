@@ -59,6 +59,8 @@ export {
   CelsiusParameterSchema,
   ParameterSourceSchema,
   ParameterConfidenceSchema,
+  VerifiedAtSchema,
+  UNIT_CONSTRAINTS,
   estimatedSeconds,
   estimatedCelsius,
 } from './parameter'
@@ -68,6 +70,8 @@ export type {
   CelsiusParameter,
   ParameterSource,
   ParameterConfidence,
+  VerifiedAt,
+  UnitConstraints,
 } from './parameter'
 
 // Entidades

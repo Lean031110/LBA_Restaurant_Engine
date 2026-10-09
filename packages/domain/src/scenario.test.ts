@@ -111,4 +111,70 @@ describe('ScenarioSchema', () => {
       expect(mal.issues[0].path).toBe('parameters.demanda-base.sourceType')
     }
   })
+
+  it('los parámetros globales heredan las cotas de su unidad', () => {
+    const escenario = minimalScenarioExample()
+    // Porcentaje fuera de 0–100 en el override → rechazado con ruta exacta.
+    const porcentaje = validate(ScenarioSchema, {
+      ...escenario,
+      parameters: {
+        'ocupacion-salon': {
+          value: 80,
+          unit: '%',
+          sourceType: 'estimated',
+          confidence: 'low',
+          scenarioOverrideValue: 120,
+        },
+      },
+    })
+    expect(porcentaje.ok).toBe(false)
+    if (!porcentaje.ok) {
+      expect(
+        porcentaje.issues.some(
+          (i) => i.path === 'parameters.ocupacion-salon.scenarioOverrideValue',
+        ),
+      ).toBe(true)
+    }
+    // persons fraccionario → rechazado por entero.
+    const fraccion = validate(ScenarioSchema, {
+      ...escenario,
+      parameters: {
+        'demanda-base': {
+          value: 10.5,
+          unit: 'persons',
+          sourceType: 'estimated',
+          confidence: 'low',
+        },
+      },
+    })
+    expect(fraccion.ok).toBe(false)
+    if (!fraccion.ok) {
+      expect(fraccion.issues.some((i) => i.path === 'parameters.demanda-base.value')).toBe(true)
+    }
+  })
+
+  it('acepta parámetros globales válidos en los bordes de su unidad', () => {
+    const escenario = minimalScenarioExample()
+    const result = validate(ScenarioSchema, {
+      ...escenario,
+      parameters: {
+        'ocupacion-salon': {
+          value: 100,
+          unit: '%',
+          sourceType: 'estimated',
+          confidence: 'low',
+          minValue: 0,
+          maxValue: 100,
+          scenarioOverrideValue: 0,
+        },
+        'demanda-base': {
+          value: 0,
+          unit: 'persons',
+          sourceType: 'estimated',
+          confidence: 'low',
+        },
+      },
+    })
+    expect(result.ok).toBe(true)
+  })
 })

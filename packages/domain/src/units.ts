@@ -32,9 +32,17 @@ export const InventoryUnitSchema = z.enum(['unit', 'g', 'kg', 'ml', 'l'])
 export type InventoryUnit = z.infer<typeof InventoryUnitSchema>
 
 /**
- * Unidades de parámetro permitidas: segundos (duración), grados Celsius
- * (temperatura), metros/centímetros (longitud), personas, unidades y
- * porcentaje (0–100).
+ * Unidades de parámetro permitidas, con la semántica que el dominio les
+ * impone (la aplicación está en `parameter.ts`, tabla `UNIT_CONSTRAINTS`):
+ *
+ * - `s`: duración de simulación; no negativa, decimales permitidos.
+ * - `C`: temperatura en grados Celsius; admite valores negativos (p. ej.
+ *   rangos de congelador de −25 a −15); solo se exige número finito.
+ * - `m`/`cm`: longitud (magnitud: alturas, distancias); no negativa,
+ *   decimales permitidos.
+ * - `persons`: conteo de personas; entero no negativo.
+ * - `unit`: conteo de artículos; entero no negativo.
+ * - `%`: porcentaje; rango inclusivo 0–100 en todos los campos numéricos.
  */
 export const ParameterUnitSchema = z.enum(['s', 'C', 'm', 'cm', 'persons', 'unit', '%'])
 export type ParameterUnit = z.infer<typeof ParameterUnitSchema>
