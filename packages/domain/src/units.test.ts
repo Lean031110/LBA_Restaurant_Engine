@@ -68,6 +68,20 @@ describe('geometría del mundo', () => {
     }
   })
 
+  it('posición admite coordenadas con signo (hogar de las cantidades espaciales firmadas)', () => {
+    // Decisión de diseño documentada en parameter.ts: los parámetros m/cm
+    // son magnitudes no negativas del catálogo; las coordenadas y
+    // desplazamientos CON SIGNO viven aquí y en los tipos de FASE 07.
+    expect(validate(PositionSchema, { x: -3.2, y: -0.5 }).ok).toBe(true)
+    expect(validate(PositionSchema, { x: 12.75, y: 0 }).ok).toBe(true)
+    // Con signo no exime de finitud: NaN sigue rechazado con ruta exacta.
+    const noFinita = validate(PositionSchema, { x: -1, y: Number.NaN })
+    expect(noFinita.ok).toBe(false)
+    if (!noFinita.ok) {
+      expect(noFinita.issues[0].path).toBe('y')
+    }
+  })
+
   it('dimensiones exigen ancho y fondo positivos', () => {
     expect(validate(DimensionsSchema, { width: 1.2, depth: 0.8 }).ok).toBe(true)
     const result = validate(DimensionsSchema, { width: -1, depth: 0.8 })

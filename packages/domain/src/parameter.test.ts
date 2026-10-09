@@ -228,6 +228,20 @@ describe('porcentajes: rango inclusivo 0–100 en todos los campos', () => {
     }
   })
 
+  it('un rango declarado no puede contradecir las cotas de la unidad', () => {
+    // Propiedad anti-contradicción para el catálogo 02.2: las cotas de la
+    // unidad son del dominio y se aplican también a minValue/maxValue; un
+    // registro % con maxValue 200 se rechaza aunque value esté dentro de 0–100.
+    const resultado = validate(ParameterRecordSchema, { ...basePercent, maxValue: 200 })
+    expect(resultado.ok).toBe(false)
+    if (!resultado.ok) {
+      expect(resultado.issues.some((i) => i.path === 'maxValue')).toBe(true)
+      expect(
+        resultado.issues.some((i) => i.path === 'maxValue' && i.message.includes('porcentaje')),
+      ).toBe(true)
+    }
+  })
+
   it('acepta overrides y límites en los bordes exactos 0 y 100', () => {
     const result = validate(ParameterRecordSchema, {
       ...basePercent,
@@ -435,6 +449,40 @@ describe('unidades persons, unit, m y cm', () => {
     expect(validate(ParameterRecordSchema, { ...baseCentimetros, value: -1 }).ok).toBe(false)
   })
 
+  it('m/cm: la no negatividad alcanza minValue, maxValue y scenarioOverrideValue', () => {
+    // Decisión de diseño confirmada contra el contrato (documentada en
+    // parameter.ts): los parámetros de longitud son magnitudes; la cota se
+    // aplica por igual a los cuatro campos numéricos. Las coordenadas con
+    // signo tienen su propio hogar en PositionSchema (probado en units.test).
+    const baseLongitud = {
+      value: 0.85,
+      unit: 'm',
+      sourceType: 'estimated',
+      confidence: 'low',
+    } as const
+    for (const campo of ['minValue', 'maxValue', 'scenarioOverrideValue'] as const) {
+      for (const unidad of ['m', 'cm'] as const) {
+        const result = validate(ParameterRecordSchema, {
+          ...baseLongitud,
+          unit: unidad,
+          [campo]: -0.01,
+        })
+        expect(result.ok, `${unidad}.${campo} = -0.01 debe rechazarse`).toBe(false)
+        if (!result.ok) {
+          expect(result.issues.some((i) => i.path === campo)).toBe(true)
+        }
+      }
+    }
+    // Contrapartida positiva: magnitud decimal y override decimal dentro del rango.
+    const valido = validate(ParameterRecordSchema, {
+      ...baseLongitud,
+      minValue: 0,
+      maxValue: 2,
+      scenarioOverrideValue: 1.25,
+    })
+    expect(valido.ok).toBe(true)
+  })
+
   it('la tabla UNIT_CONSTRAINTS cubre todas las unidades permitidas', () => {
     for (const unidad of ParameterUnitSchema.options) {
       expect(UNIT_CONSTRAINTS[unidad]).toBeDefined()
@@ -469,8 +517,10 @@ describe('verifiedAt: fechas de calendario reales, no solo formato', () => {
     }
   })
 
-  it('acepta bisiestos reales y fechas válidas', () => {
-    for (const valida of ['2024-02-29', '2000-02-29', '2026-12-31', '2026-01-01']) {
+  it('acepta bisiestos reales y fechas pasadas válidas', () => {
+    // Solo fechas pasadas o de hoy: la regla de no-futuro (describe
+    // siguiente) rechaza cualquier fecha por delante de la UTC en curso.
+    for (const valida of ['2024-02-29', '2000-02-29', '2020-02-29', '2026-01-01', '2026-10-09']) {
       expect(validate(ParameterRecordSchema, { ...base, verifiedAt: valida }).ok).toBe(true)
     }
   })
@@ -478,6 +528,43 @@ describe('verifiedAt: fechas de calendario reales, no solo formato', () => {
   it('sigue rechazando cadenas que no son fechas ISO', () => {
     for (const malFormato of ['2026-1-1', '26-01-01', '2026/10/09', 'hoy', '']) {
       expect(validate(ParameterRecordSchema, { ...base, verifiedAt: malFormato }).ok).toBe(false)
+    }
+  })
+})
+
+describe('verifiedAt: la fecha de verificación no puede ser futura', () => {
+  /** Fecha UTC (YYYY-MM-DD) desplazada ± días desde hoy; estable cualquier día que se ejecute. */
+  function fechaUtcDesdeHoy(dias: number): string {
+    const hoy = new Date()
+    const ms =
+      Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate()) + dias * 86_400_000
+    return new Date(ms).toISOString().slice(0, 10)
+  }
+
+  it('acepta hoy, ayer y fechas pasadas lejanas', () => {
+    for (const pasada of [fechaUtcDesdeHoy(0), fechaUtcDesdeHoy(-1), fechaUtcDesdeHoy(-3650)]) {
+      expect(validate(ParameterRecordSchema, { ...base, verifiedAt: pasada }).ok).toBe(true)
+    }
+  })
+
+  it('tolera hasta 1 día por delante de la fecha UTC (zonas horarias hasta UTC+14)', () => {
+    // La tolerancia cubre la fecha local «de hoy» de un verificador en una
+    // zona por delante de UTC; no abre la puerta a fechas futuras reales.
+    expect(validate(ParameterRecordSchema, { ...base, verifiedAt: fechaUtcDesdeHoy(1) }).ok).toBe(
+      true,
+    )
+  })
+
+  it('rechaza fechas futuras con ruta exacta y mensaje específico', () => {
+    for (const futura of [fechaUtcDesdeHoy(2), '2999-12-31']) {
+      const result = validate(ParameterRecordSchema, { ...base, verifiedAt: futura })
+      expect(result.ok, `verifiedAt ${futura} debe rechazarse`).toBe(false)
+      if (!result.ok) {
+        expect(result.issues.some((i) => i.path === 'verifiedAt')).toBe(true)
+        expect(
+          result.issues.some((i) => i.path === 'verifiedAt' && i.message.includes('futura')),
+        ).toBe(true)
+      }
     }
   })
 })

@@ -23,13 +23,34 @@ import type { ParameterUnit } from './units'
  *   pueden ser negativas (p. ej. un congelador con rango −25 a −15 °C); no
  *   se imponen cotas físicas no declaradas por el contrato. Se mantiene el
  *   orden de los límites y la coherencia valor–unidad–rango declarado.
- * - `m`/`cm` (longitud): no negativas, con decimales. Los parámetros de
- *   longitud son magnitudes (alturas, distancias, profundidades); las
- *   coordenadas con signo viven en `PositionSchema`, no aquí.
+ * - `m`/`cm` (longitud): no negativas, con decimales. Decisión de diseño
+ *   confirmada contra el contrato: los parámetros de longitud del dominio
+ *   son magnitudes — dimensiones, huellas, alturas, despejes, distancias y
+ *   radios (docs/guia/01 §«Las dimensiones del local se almacenan en metros
+ *   o centímetros de mundo… longitudes en metros»; docs/guia/02 propiedad
+ *   `accessibleClearance` de mesa; prompt 02.2 «dimensiones, huella, punto
+ *   de interacción»). `ParameterRecord` representa escalares con unidad del
+ *   catálogo: las cantidades espaciales CON SIGNO (coordenadas,
+ *   desplazamientos, vectores de movimiento) no son parámetros — viven en
+ *   `PositionSchema` (x/y finitas con signo) y vivirán en los tipos del
+ *   motor de movilidad (FASE 07). Camino de extensión si algún día se
+ *   necesitara una longitud con signo como parámetro: añadir una unidad o
+ *   variante EXPLÍCITA al enum con su semántica documentada en
+ *   `UNIT_CONSTRAINTS`; las cotas de `m`/`cm` jamás se relajan en silencio.
  * - `persons` (personas): entero no negativo; cuenta personas discretas.
  * - `unit` (artículos): entero no negativo; cuenta artículos discretos.
  * - `%` (porcentaje): entre 0 y 100 inclusive, por definición de la unidad
  *   (docs de unidades: «porcentaje (0–100)»).
+ *
+ * No duplicación de reglas (requisito para el catálogo 02.2 y el editor):
+ * `UNIT_CONSTRAINTS` es la única fuente de verdad de estas cotas. El
+ * catálogo de presets y el editor DEBEN reutilizar `ParameterRecordSchema`
+ * y `UNIT_CONSTRAINTS` declarando solo datos (valor, rango editable,
+ * procedencia); re-implementar estas reglas en otra capa está prohibido
+ * para que nada pueda contradecir al dominio. Además, los rangos
+ * declarados (`minValue`/`maxValue`) se validan contra las cotas de la
+ * unidad: un catálogo no puede declarar un rango que viole la semántica
+ * de su unidad (p. ej. `maxValue` 200 en `%`, o `minValue` −10 en `s`).
  */
 
 /** Procedencia del valor (regla 10 y riesgo R-02). */
@@ -81,8 +102,8 @@ export const UNIT_CONSTRAINTS: Record<ParameterUnit, UnitConstraints> = {
 const UNIT_EXPLANATIONS: Record<ParameterUnit, string> = {
   s: 'una duración de simulación no puede ser negativa',
   C: 'las temperaturas en grados Celsius admiten valores negativos',
-  m: 'una longitud en metros no puede ser negativa',
-  cm: 'una longitud en centímetros no puede ser negativa',
+  m: 'un parámetro de longitud en metros es una magnitud y no puede ser negativo',
+  cm: 'un parámetro de longitud en centímetros es una magnitud y no puede ser negativo',
   persons: 'un conteo de personas es un entero no negativo',
   unit: 'un conteo de artículos es un entero no negativo',
   '%': 'un porcentaje vive entre 0 y 100',
@@ -110,9 +131,47 @@ function isRealCalendarDate(raw: string): boolean {
   return day >= 1 && day <= daysInMonth
 }
 
-/** Fecha de verificación ISO-8601 que existe en el calendario real. */
-export const VerifiedAtSchema = z.string().refine(isRealCalendarDate, {
-  error: 'verifiedAt debe ser una fecha real del calendario en formato ISO (YYYY-MM-DD)',
+/** Milisegundos de un día; base de la tolerancia temporal de `verifiedAt`. */
+const MS_PER_DAY = 86_400_000
+
+/**
+ * Comprueba que la fecha de verificación no esté en el futuro: verificar
+ * una fuente es un evento ya ocurrido, no una cita pendiente. La
+ * comparación usa la fecha UTC en curso más una tolerancia de 1 día para
+ * no rechazar la fecha local «de hoy» registrada en zonas horarias por
+ * delante de UTC (el desfase máximo del planeta es UTC+14).
+ */
+function isFutureVerificationDate(raw: string, now: Date): boolean {
+  const year = Number(raw.slice(0, 4))
+  const month = Number(raw.slice(5, 7))
+  const day = Number(raw.slice(8, 10))
+  const dateMs = Date.UTC(year, month - 1, day)
+  const todayUtcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  return dateMs > todayUtcMs + MS_PER_DAY
+}
+
+/**
+ * Fecha de verificación ISO-8601 que existe en el calendario real y no es
+ * futura (con tolerancia de 1 día para zonas horarias por delante de UTC).
+ * Es la fecha en que se comprobó la fuente del valor (docs/guia/02:
+ * «se cita la fuente, se registra la fecha»), por lo que un valor como
+ * «2999-12-31» es tan inválido como «2026-02-30».
+ */
+export const VerifiedAtSchema = z.string().superRefine((raw, ctx) => {
+  if (!isRealCalendarDate(raw)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'verifiedAt debe ser una fecha real del calendario en formato ISO (YYYY-MM-DD)',
+    })
+    return
+  }
+  if (isFutureVerificationDate(raw, new Date())) {
+    ctx.addIssue({
+      code: 'custom',
+      message:
+        'verifiedAt no puede ser una fecha futura: es la fecha en que se verificó la fuente (se admite hasta 1 día por delante de la fecha UTC en curso)',
+    })
+  }
 })
 export type VerifiedAt = z.infer<typeof VerifiedAtSchema>
 
@@ -140,7 +199,7 @@ const ParameterRecordObjectSchema = z.object({
   sourceName: z.string().min(1).optional(),
   /** URL de la fuente (opcional, formato verificado). */
   sourceUrl: z.url({ error: 'sourceUrl debe ser una URL válida' }).optional(),
-  /** Fecha de verificación en ISO-8601 con calendario real (opcional). */
+  /** Fecha de verificación en ISO-8601: calendario real y no futura. */
   verifiedAt: VerifiedAtSchema.optional(),
   /** Supuestos del modelo (opcional). */
   assumptions: z.string().min(1).optional(),

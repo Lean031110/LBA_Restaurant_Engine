@@ -1,7 +1,7 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **iteración correctiva 02.1-b** (invariantes semánticos de parámetros) preparada y verificada en local, **pendiente de publicación** hasta que el propietario rote la credencial de GitHub (ver «Bloqueo de seguridad» en `PHASE-01.md`)
-- Fecha UTC: 2026-10-10 (correctiva) / 2026-10-09 (02.1)
+- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **iteración correctiva 02.1-b + revisión de diseño 02.1-c** preparadas y verificadas en local, **pendientes de publicación** hasta que el propietario rote la credencial de GitHub (ver «Bloqueo de seguridad» en `PHASE-01.md`)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b y revisión de diseño 02.1-c — fechas verificables por timestamps git)
 - Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4; solo 02.1 ejecutado + correctiva)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
@@ -13,7 +13,7 @@
 
 ## Iteración correctiva 02.1-b — Invariantes semánticos del parámetro
 
-**Origen**: revisión del propietario sobre el merge del PR #4 (2026-10-10). El CI estaba en verde pero el modelo admitía estados semánticamente inválidos. La iteración NO se considera completada hasta que esta corrección esté integrada y verificada en `main`.
+**Origen**: revisión del propietario sobre el merge del PR #4 (2026-10-09, tras el merge de las 16:33:08Z). El CI estaba en verde pero el modelo admitía estados semánticamente inválidos. La iteración NO se considera completada hasta que esta corrección esté integrada y verificada en `main`.
 
 ### Defectos detectados y corregidos
 
@@ -41,7 +41,7 @@
 - `scenarios/fixtures/invalid-negative-duration.json` (nuevo): violación única documentada (calentamiento −30 s); `fixtures.test.ts` exige la ruta `equipment[0].warmupSeconds.value`.
 - **Ninguna aserción existente fue eliminada, debilitada ni sustituida**: 177 → 273 sentencias `expect` en el paquete domain (+96); los tests previos se conservan íntegros y siguen pasando sin cambios de expectativa.
 
-### Verificación local (2026-10-10, rama `fix/phase-02-parameter-invariants`, Node v24.21.0)
+### Verificación local (2026-10-09, rama `fix/phase-02-parameter-invariants`, Node v24.21.0)
 
 | Paso                     | Resultado real | Detalle                                                                                                                                                                              |
 | ------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -58,8 +58,60 @@
 ### Estado de publicación
 
 - La rama `fix/phase-02-parameter-invariants` está creada desde `main` (`97bb93bd`) con los cambios anteriores.
-- **No se ha hecho push ni se ha abierto PR**: las escrituras remotas están suspendidas hasta que el propietario revoque el token antiguo y configure la credencial nueva (instrucción del 2026-10-10; registro del incidente en `PHASE-01.md`).
+- **No se ha hecho push ni se ha abierto PR**: las escrituras remotas están suspendidas hasta que el propietario revoque el token antiguo y configure la credencial nueva (instrucción del 2026-10-09; registro del incidente en `PHASE-01.md`).
 - Flujo pendiente cuando la credencial esté lista: push → PR → revisión del diff → Actions sobre el SHA exacto → inspección de pasos/tests/artefactos → confirmación de ausencia de conflictos → actualización de este informe con SHA/URLs/artefactos reales → merge autónomo (si todo verifica) → verificación del CI post-merge.
+
+## Revisión de diseño 02.1-c — Dos detalles del propietario + corrección de fechas
+
+**Origen**: segunda revisión del propietario (2026-10-09) sobre la correctiva 02.1-b local (aún no publicada). Pide: (1) confirmar que la no negatividad de `m`/`cm` es válida para **todos** los usos previstos de `ParameterRecord` y, si el modelo pudiera representar desplazamientos con signo, no imponer la restricción global por unidad sino definir una semántica o tipo explícito; (2) comprobar que `verifiedAt` rechaza fechas imposibles, que los overrides se validan contra las restricciones de la unidad **y** los límites declarados, y que ninguna regla quedó duplicada de forma que el futuro catálogo pueda contradecir al dominio; (3) corregir fechas inconsistentes del registro del incidente.
+
+### Decisión 1 — `m`/`cm` como magnitudes: confirmada contra el contrato
+
+- **Confirmación de validez**: en el contrato, los parámetros de longitud son siempre magnitudes — dimensiones del local (docs/guia/01: «Las dimensiones del local se almacenan en metros o centímetros de mundo […] longitudes en metros»), huellas y puntos de interacción de presets (prompt 02.2: «dimensiones, huella, punto de interacción»), despejes accesibles (docs/guia/02: `accessibleClearance`), radios y distancias (docs/guia/04 §6). No existe ningún uso previsto de `ParameterRecord` con unidad `m`/`cm` que represente un desplazamiento con signo.
+- **Semántica explícita (documentada en `parameter.ts` y `units.ts`)**: `ParameterRecord` representa escalares con unidad del catálogo; las cantidades espaciales **con signo** (coordenadas, desplazamientos, vectores de movimiento) no son parámetros — viven en `PositionSchema` (x/y finitas con signo) y vivirán en los tipos del motor de movilidad (FASE 07). Prueba que fija ese hogar: `units.test.ts` acepta coordenadas negativas en `PositionSchema` y sigue exigiendo finitud con ruta exacta.
+- **Camino de extensión**: si algún día se necesitara una longitud con signo como parámetro, se añade una unidad o variante **explícita** al enum con su semántica documentada en `UNIT_CONSTRAINTS`; las cotas de `m`/`cm` no se relajan en silencio. Con esto no se impone una restricción «global arbitraria»: es la semántica de la unidad confirmada por el contrato, y la excepción futura tiene un camino definido y auditable.
+- **Pruebas nuevas**: `parameter.test.ts` — la no negatividad de `m`/`cm` alcanza `minValue`, `maxValue` y `scenarioOverrideValue` (6 combinaciones con ruta exacta) y una contrapartida positiva con override decimal válido.
+
+### Decisión 2 — Fechas, overrides y no duplicación
+
+- **`verifiedAt` rechaza fechas imposibles — ahora también las futuras**: verificar una fuente es un evento ya ocurrido (docs/guia/02: «se cita la fuente, se registra la fecha»), de modo que «2999-12-31» es tan inválido como «2026-02-30». Se mantiene el calendario real (bisiestos incluidos) y se añade el rechazo de fechas posteriores a la fecha UTC en curso **más 1 día de tolerancia**, para no rechazar la fecha local «de hoy» de un verificador en zonas horarias por delante de UTC (el desfase máximo del planeta es UTC+14; la tolerancia no es un límite arbitrario sino la cobertura de ese desfase). Pruebas dinámicas estables cualquier día que se ejecuten: hoy/ayer/pasado lejano aceptados; hoy+1 tolerado; hoy+2 y «2999-12-31» rechazados con ruta `verifiedAt` y mensaje específico.
+- **Ajuste de la lista de fechas válidas**: «2026-12-31» salió de la lista de fechas válidas del test de bisiestos **porque la regla nueva la rechaza** (es futura respecto a la fecha en curso); se sustituyó por fechas pasadas verificables («2020-02-29», «2026-10-09»). Es un endurecimiento, no una debilitación: el conteo total de aserciones del paquete subió de 273 a 288.
+- **Overrides**: confirmado por pruebas existentes y nuevas que `scenarioOverrideValue` se valida con **ambas** capas — las cotas de la unidad (p. ej. override `-50` en `s`, `150` en `%`, `-0.01` en `m`) y el rango declarado (`minValue`/`maxValue`), siempre con ruta exacta `scenarioOverrideValue`.
+- **No duplicación (el catálogo no puede contradecir al dominio)**: auditoría estructural — `EquipmentSchema` reutiliza `SecondsParameterSchema`/`CelsiusParameterSchema`, `ScenarioSchema` reutiliza `ParameterRecordSchema`, `units.ts` no aplica reglas (solo las documenta) y `UNIT_CONSTRAINTS` sigue siendo la única fuente de verdad de las cotas. Prueba nueva de anti-contradicción: un rango declarado que viole la semántica de la unidad se rechaza (p. ej. `%` con `maxValue: 200` → ruta `maxValue` con mensaje de la unidad), es decir, el catálogo 02.2 solo podrá declarar datos dentro de lo que el dominio permite. Mandato documentado en `parameter.ts`: el catálogo y el editor deben reutilizar `ParameterRecordSchema`/`UNIT_CONSTRAINTS`, no re-implementar reglas.
+
+### Corrección de fechas del registro del incidente
+
+- `PHASE-01.md` y este informe fechaban la instrucción de suspensión de escrituras y la correctiva en 2026-10-10 (desfase del reloj local del agente, UTC+8). La fecha verificable de los eventos es **2026-10-09 UTC**: la instrucción llegó tras el merge del PR #4 (16:33:08Z) y antes del primer commit correctivo local (18:06:39Z), ambos del 2026-10-09. Corregido en `PHASE-01.md` (con nota de corrección explícita) y en las 4 menciones de este informe.
+
+### Cambios concretos (rama `fix/phase-02-parameter-invariants`, commit 02.1-c sobre `2d92c9a`)
+
+_(El SHA exacto de la punta de la rama se registra en el informe de revisión y en el log de trabajo del agente; un commit no puede contener su propio hash. Al publicar, este informe se actualizará con el SHA evaluado por Actions.)_
+
+_**Nota de autoría**: el entorno del agente se reinició entre sesiones y la identidad git local se perdió, dejando los commits correctivos con una identidad genérica del contenedor. Antes de publicar se restauró la identidad LeanKnight y se re-autoraron los commits locales **no publicados** (el 02.1-b conserva su fecha de autoría original, 18:06:39Z; mapeo en el log de trabajo: `04e3566` → `2d92c9a`); el historial publicado no se tocó y existe respaldo local `backup/02-1-local`. El mismo reinicio eliminó cualquier credencial del entorno: no queda token alguno en archivos de configuración, lo que reduce a cero la superficie de exposición local del incidente (que sigue ABIERTO hasta la rotación confirmada por el propietario)._
+
+- `packages/domain/src/parameter.ts`: documentación de la decisión m/cm con referencias de contrato y camino de extensión; regla de no duplicación para el catálogo 02.2; `VerifiedAtSchema` con `superRefine` (calendario real + no futuro con tolerancia de 1 día); mensajes de unidad m/cm aclaran que son magnitudes.
+- `packages/domain/src/units.ts`: documentación de la semántica m/cm y de `PositionSchema` como hogar de las coordenadas con signo.
+- `packages/domain/src/parameter.test.ts`: 41 → 46 tests (+m/cm en 4 campos, +rango declarado que contradice a la unidad, +3 de fechas futuras dinámicas; lista de fechas válidas ajustada por la regla nueva).
+- `packages/domain/src/units.test.ts`: 10 → 11 tests (+`PositionSchema` admite coordenadas con signo y sigue exigiendo finitud).
+- `docs/evidence/PHASE-01.md` y `docs/evidence/PHASE-02.md`: corrección de fechas y esta sección.
+
+### Verificación local (2026-10-09, rama `fix/phase-02-parameter-invariants`, Node v24.21.0)
+
+| Paso                     | Resultado real | Detalle                                                                                                                                                                                           |
+| ------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm ci`                 | OK             | instalación limpia desde lockfile, 0 vulnerabilidades                                                                                                                                             |
+| `npm run format:check`   | OK             | Prettier sin diferencias (tras normalizar `PHASE-01.md`)                                                                                                                                          |
+| `npm run lint`           | OK             | 0 errores, 0 avisos                                                                                                                                                                               |
+| `npm run typecheck`      | OK             | `tsc --noEmit` sin errores en ambos workspaces                                                                                                                                                    |
+| `npm test`               | OK             | **163/163** (33 web + 130 domain); domain: 100% sentencias, 98,90% ramas, 100% funciones, 100% líneas; `parameter.ts` y `units.ts` 100% en las cuatro métricas; web: 96,07% líneas / 88,52% ramas |
+| `npm run build`          | OK             | build de producción completa                                                                                                                                                                      |
+| Smoke preview            | OK             | HTTP 200 con `<title>LBA_Restaurant_Engine</title>`                                                                                                                                               |
+| `npm run audit:licenses` | OK             | 228 paquetes, todas las licencias permitidas (5 excepciones ADR-0002)                                                                                                                             |
+| `npm run audit:security` | OK             | 0 vulnerabilidades                                                                                                                                                                                |
+
+Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción previa fue eliminada ni debilitada (verificado con stash antes/después sobre el estado del 02.1-b, `04e3566`/`2d92c9a`).
+
+**Estado de publicación**: sin cambios — SIN push, SIN PR, SIN merge hasta que el propietario revoque la credencial antigua, configure la nueva y lo confirme explícitamente.
 
 ## Criterios de salida de la fase (parcial)
 

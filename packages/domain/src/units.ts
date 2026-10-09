@@ -38,8 +38,11 @@ export type InventoryUnit = z.infer<typeof InventoryUnitSchema>
  * - `s`: duración de simulación; no negativa, decimales permitidos.
  * - `C`: temperatura en grados Celsius; admite valores negativos (p. ej.
  *   rangos de congelador de −25 a −15); solo se exige número finito.
- * - `m`/`cm`: longitud (magnitud: alturas, distancias); no negativa,
- *   decimales permitidos.
+ * - `m`/`cm`: longitud. Los parámetros con estas unidades son magnitudes
+ *   (dimensiones, huellas, alturas, despejes, distancias — contrato
+ *   docs/guia/01 y prompt 02.2), por eso no negativas; las coordenadas y
+ *   desplazamientos CON SIGNO viven en `PositionSchema`, no en
+ *   `ParameterRecord` (decisión documentada en `parameter.ts`).
  * - `persons`: conteo de personas; entero no negativo.
  * - `unit`: conteo de artículos; entero no negativo.
  * - `%`: porcentaje; rango inclusivo 0–100 en todos los campos numéricos.
@@ -47,7 +50,14 @@ export type InventoryUnit = z.infer<typeof InventoryUnitSchema>
 export const ParameterUnitSchema = z.enum(['s', 'C', 'm', 'cm', 'persons', 'unit', '%'])
 export type ParameterUnit = z.infer<typeof ParameterUnitSchema>
 
-/** Posición en coordenadas del mundo (siempre finitas). */
+/**
+ * Posición en coordenadas del mundo (siempre finitas, con signo). Este es
+ * el hogar de las cantidades espaciales firmadas del dominio: las
+ * coordenadas y los desplazamientos con signo viven aquí y en los tipos
+ * del motor de movilidad, nunca como `ParameterRecord` de unidad m/cm
+ * (que son magnitudes no negativas — decisión documentada en
+ * `parameter.ts`).
+ */
 export const PositionSchema = z.object({
   x: FiniteNumberSchema,
   y: FiniteNumberSchema,
