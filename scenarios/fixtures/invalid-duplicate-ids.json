@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-ids-duplicados",
+  "name": "Fixture con IDs duplicados en zonas",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [],
+  "zones": [
+    {
+      "id": "zone_salon",
+      "name": "Salón",
+      "category": "dining",
+      "bounds": { "min": { "x": 0, "y": 0 }, "max": { "x": 6, "y": 8 } },
+      "allowedRoles": [],
+      "accessRules": []
+    },
+    {
+      "id": "zone_salon",
+      "name": "Salón otra vez",
+      "category": "dining",
+      "bounds": { "min": { "x": 6, "y": 0 }, "max": { "x": 10, "y": 8 } },
+      "allowedRoles": [],
+      "accessRules": []
+    }
+  ],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [],
+  "orders": [],
+  "recipes": [],
+  "inventory": [],
+  "parameters": {}
+}

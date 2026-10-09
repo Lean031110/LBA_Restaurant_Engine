@@ -1,0 +1,445 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-completo",
+  "name": "Fixture completo válido",
+  "description": "Pizzería-bar pequeña con cocina, salón, puerta, paredes y pedidos",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 14, "depth": 10 }
+  },
+  "seed": 7,
+  "objects": [
+    {
+      "id": "obj_pared-norte",
+      "kind": "wall",
+      "position": { "x": 7, "y": 0 },
+      "rotation": 0,
+      "dimensions": { "width": 14, "depth": 0.2 },
+      "interactionPoint": { "x": 7, "y": 0.4 },
+      "tags": ["estructura"],
+      "layer": "structure",
+      "properties": {}
+    },
+    {
+      "id": "obj_puerta-cocina",
+      "kind": "door",
+      "name": "Puerta de cocina",
+      "position": { "x": 9, "y": 5 },
+      "rotation": 90,
+      "dimensions": { "width": 0.9, "depth": 0.15 },
+      "interactionPoint": { "x": 9, "y": 5.6 },
+      "zoneId": "zone_cocina",
+      "tags": ["paso"],
+      "layer": "structure",
+      "properties": { "sentido": "doble" },
+      "doorType": "swing"
+    },
+    {
+      "id": "obj_ventana-salon",
+      "kind": "window",
+      "position": { "x": 3, "y": 0.1 },
+      "rotation": 0,
+      "dimensions": { "width": 2, "depth": 0.1 },
+      "interactionPoint": { "x": 3, "y": 0.5 },
+      "zoneId": "zone_salon",
+      "tags": [],
+      "layer": "structure",
+      "properties": {}
+    },
+    {
+      "id": "obj_mesa-01",
+      "kind": "furniture",
+      "name": "Mesa 01",
+      "position": { "x": 2, "y": 3 },
+      "rotation": 0,
+      "dimensions": { "width": 1.2, "depth": 0.8 },
+      "footprint": [
+        { "x": 1.4, "y": 2.6 },
+        { "x": 2.6, "y": 2.6 },
+        { "x": 2.6, "y": 3.4 },
+        { "x": 1.4, "y": 3.4 }
+      ],
+      "interactionPoint": { "x": 2, "y": 2.2 },
+      "zoneId": "zone_salon",
+      "tags": ["mesa", "ventana"],
+      "layer": "furniture",
+      "material": "madera",
+      "color": "#8B5A2B",
+      "properties": { "sillas": 4 },
+      "capacity": 4
+    },
+    {
+      "id": "obj_salida-principal",
+      "kind": "exit",
+      "name": "Salida",
+      "position": { "x": 0.5, "y": 9.5 },
+      "rotation": 0,
+      "dimensions": { "width": 1.4, "depth": 0.3 },
+      "interactionPoint": { "x": 0.5, "y": 9 },
+      "zoneId": "zone_salida",
+      "tags": ["emergencia"],
+      "layer": "structure",
+      "properties": {}
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone_salon",
+      "name": "Salón",
+      "category": "dining",
+      "bounds": { "min": { "x": 0, "y": 0 }, "max": { "x": 8, "y": 6 } },
+      "capacity": 24,
+      "allowedRoles": ["waiter", "customer", "manager"],
+      "accessRules": ["clientes solo por el acceso principal"]
+    },
+    {
+      "id": "zone_cocina",
+      "name": "Cocina",
+      "category": "kitchen",
+      "bounds": { "min": { "x": 8, "y": 4 }, "max": { "x": 14, "y": 10 } },
+      "capacity": 4,
+      "allowedRoles": ["cook", "pizza_maker", "dishwasher"],
+      "stationFunction": "cocina-caliente",
+      "accessRules": []
+    },
+    {
+      "id": "zone_salida",
+      "name": "Salida",
+      "category": "exit",
+      "bounds": { "min": { "x": 0, "y": 8 }, "max": { "x": 2, "y": 10 } },
+      "allowedRoles": [],
+      "accessRules": []
+    }
+  ],
+  "agents": [
+    {
+      "id": "agent_cocinero-01",
+      "displayName": "Cocinero 01",
+      "role": "cook",
+      "skills": ["plancha", "freidora"],
+      "position": { "x": 10, "y": 6 },
+      "orientation": 180,
+      "speedMps": 1.2,
+      "homeZoneId": "zone_cocina",
+      "state": "idle",
+      "policy": {
+        "priorityOrder": ["pedidos-urgentes", "trabajo-de-estacion", "reposicion", "limpieza"]
+      }
+    },
+    {
+      "id": "agent_camarero-01",
+      "displayName": "Camarero 01",
+      "role": "waiter",
+      "skills": ["atencion-salon", "cobro"],
+      "position": { "x": 4, "y": 4 },
+      "speedMps": 1.4,
+      "homeZoneId": "zone_salon",
+      "state": "idle"
+    }
+  ],
+  "taskTemplates": [
+    {
+      "id": "task_preparar-pizza",
+      "name": "Preparar pizza",
+      "preconditions": ["masa disponible", "horno encendido"],
+      "steps": [
+        {
+          "name": "Estirar masa",
+          "durationSeconds": {
+            "value": 60,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "parallelizable": false
+        },
+        {
+          "name": "Hornear",
+          "durationSeconds": {
+            "value": 420,
+            "unit": "s",
+            "sourceType": "manufacturer",
+            "confidence": "medium",
+            "sourceName": "Manual del horno",
+            "sourceUrl": "https://ejemplo.com/manual-horno",
+            "verifiedAt": "2026-10-09"
+          },
+          "requiresEquipmentId": "eq_horno-pizza-01",
+          "parallelizable": false
+        }
+      ],
+      "dependencies": [],
+      "requiredResourceIds": ["eq_horno-pizza-01"],
+      "effects": ["pizza lista"],
+      "priority": 60,
+      "interruptCondition": "emergencia de cocina",
+      "fallbackTaskId": "task_reponer-inventario"
+    },
+    {
+      "id": "task_reponer-inventario",
+      "name": "Reponer inventario",
+      "preconditions": [],
+      "steps": [
+        {
+          "name": "Traer producto del almacén",
+          "durationSeconds": {
+            "value": 180,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          }
+        }
+      ],
+      "dependencies": [],
+      "requiredResourceIds": [],
+      "effects": ["stock repuesto"],
+      "priority": 20
+    }
+  ],
+  "equipment": [
+    {
+      "id": "eq_horno-pizza-01",
+      "name": "Horno de pizza 01",
+      "kind": "pizza_oven",
+      "capacity": 2,
+      "initialState": "off",
+      "powerOnSeconds": {
+        "value": 30,
+        "unit": "s",
+        "sourceType": "manufacturer",
+        "confidence": "medium"
+      },
+      "warmupSeconds": {
+        "value": 1200,
+        "unit": "s",
+        "sourceType": "manufacturer",
+        "confidence": "medium",
+        "assumptions": "desde frío hasta 400 C"
+      },
+      "targetTemperatureC": {
+        "value": 400,
+        "unit": "C",
+        "sourceType": "manufacturer",
+        "confidence": "medium",
+        "minValue": 200,
+        "maxValue": 450
+      },
+      "heatRecoverySeconds": {
+        "value": 240,
+        "unit": "s",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "cleaningSeconds": {
+        "value": 1800,
+        "unit": "s",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "usageRules": ["no abrir la puerta más de 5 segundos por carga"]
+    },
+    {
+      "id": "eq_plancha-01",
+      "kind": "griddle",
+      "capacity": 4,
+      "initialState": "ready",
+      "targetTemperatureC": {
+        "value": 190,
+        "unit": "C",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "cooldownSeconds": {
+        "value": 3600,
+        "unit": "s",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "usageRules": []
+    }
+  ],
+  "orders": [
+    {
+      "id": "order_0001",
+      "items": [
+        { "recipeId": "recipe_hamburguesa", "quantity": 2, "modifiers": ["doble queso"] },
+        { "recipeId": "recipe_pizza-margarita", "quantity": 1, "modifiers": [] }
+      ],
+      "notes": "Mesa 01, cliente con prisa",
+      "priority": "urgent",
+      "createdAtSeconds": 0,
+      "promisedAtSeconds": 900,
+      "initialStatus": "pendiente"
+    },
+    {
+      "id": "order_0002",
+      "items": [{ "recipeId": "recipe_hamburguesa", "quantity": 1, "modifiers": [] }],
+      "priority": "low",
+      "createdAtSeconds": 120
+    }
+  ],
+  "recipes": [
+    {
+      "id": "recipe_hamburguesa",
+      "name": "Hamburguesa",
+      "components": [
+        { "inventoryItemId": "inv_carne", "quantity": 150, "unit": "g" },
+        { "inventoryItemId": "inv_pan", "quantity": 1, "unit": "unit" },
+        { "inventoryItemId": "inv_queso", "quantity": 30, "unit": "g" }
+      ],
+      "steps": [
+        {
+          "name": "Precalentar plancha",
+          "kind": "heat_equipment",
+          "requiredResourceIds": ["eq_plancha-01"]
+        },
+        {
+          "name": "Cocinar carne",
+          "kind": "cook",
+          "durationSeconds": {
+            "value": 240,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "targetTemperatureC": {
+            "value": 190,
+            "unit": "C",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "requiredResourceIds": ["eq_plancha-01"]
+        },
+        {
+          "name": "Montar",
+          "kind": "assemble",
+          "durationSeconds": {
+            "value": 60,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "parallelizable": true,
+          "requiredResourceIds": []
+        },
+        {
+          "name": "Emplatado",
+          "kind": "plate",
+          "durationSeconds": {
+            "value": 30,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "requiredResourceIds": []
+        }
+      ],
+      "estimatedTotalSeconds": {
+        "value": 390,
+        "unit": "s",
+        "sourceType": "estimated",
+        "confidence": "low"
+      },
+      "finalCondition": "carne a temperatura interna objetivo y pan tostado"
+    },
+    {
+      "id": "recipe_pizza-margarita",
+      "name": "Pizza margarita",
+      "components": [
+        { "inventoryItemId": "inv_masa", "quantity": 250, "unit": "g" },
+        { "inventoryItemId": "inv_tomate", "quantity": 100, "unit": "g" },
+        { "inventoryItemId": "inv_queso", "quantity": 120, "unit": "g" }
+      ],
+      "steps": [
+        {
+          "name": "Estirar y montar",
+          "kind": "prepare",
+          "durationSeconds": {
+            "value": 90,
+            "unit": "s",
+            "sourceType": "estimated",
+            "confidence": "low"
+          },
+          "requiredResourceIds": []
+        },
+        {
+          "name": "Hornear",
+          "kind": "cook",
+          "durationSeconds": {
+            "value": 420,
+            "unit": "s",
+            "sourceType": "manufacturer",
+            "confidence": "medium"
+          },
+          "targetTemperatureC": {
+            "value": 400,
+            "unit": "C",
+            "sourceType": "manufacturer",
+            "confidence": "medium"
+          },
+          "requiredResourceIds": ["eq_horno-pizza-01"]
+        },
+        {
+          "name": "Emplatado",
+          "kind": "plate",
+          "requiredResourceIds": []
+        }
+      ],
+      "finalCondition": "borde dorado y centro cocido"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "inv_carne",
+      "name": "Carne de vacuno",
+      "unit": "g",
+      "stock": 8000,
+      "reserved": 300,
+      "reorderPoint": 2000,
+      "replenishmentQuantity": 5000,
+      "locationWorldObjectId": "obj_puerta-cocina"
+    },
+    {
+      "id": "inv_pan",
+      "name": "Pan de hamburguesa",
+      "unit": "unit",
+      "stock": 60,
+      "reorderPoint": 20,
+      "replenishmentQuantity": 100
+    },
+    {
+      "id": "inv_queso",
+      "name": "Queso",
+      "unit": "g",
+      "stock": 3000,
+      "reorderPoint": 1000,
+      "replenishmentQuantity": 3000
+    },
+    {
+      "id": "inv_masa",
+      "name": "Masa de pizza",
+      "unit": "g",
+      "stock": 4000,
+      "reorderPoint": 1500,
+      "replenishmentQuantity": 4000
+    },
+    {
+      "id": "inv_tomate",
+      "name": "Salsa de tomate",
+      "unit": "g",
+      "stock": 5000,
+      "reorderPoint": 1000,
+      "replenishmentQuantity": 5000
+    }
+  ],
+  "parameters": {
+    "demanda-por-hora": {
+      "value": 18,
+      "unit": "persons",
+      "sourceType": "estimated",
+      "confidence": "low",
+      "assumptions": "hora punta estimada por el usuario",
+      "scenarioOverrideValue": 22
+    }
+  }
+}

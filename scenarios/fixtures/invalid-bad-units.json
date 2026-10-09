@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-unidad-invalida",
+  "name": "Fixture con unidad de inventario inválida",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [],
+  "zones": [],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [],
+  "orders": [],
+  "recipes": [],
+  "inventory": [
+    {
+      "id": "inv_carne",
+      "name": "Carne de vacuno",
+      "unit": "kilos",
+      "stock": 5000
+    }
+  ],
+  "parameters": {}
+}

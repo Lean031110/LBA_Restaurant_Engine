@@ -1,0 +1,178 @@
+import type { Scenario } from './scenario'
+import { ScenarioSchema } from './scenario'
+
+/**
+ * Ejemplo mínimo verificado de escenario (prompt 02.1: "ejemplos mínimos").
+ * Todos los valores de duración/temperatura son estimaciones editables con
+ * unidad y procedencia declaradas (regla 10 del prompt maestro).
+ */
+export function minimalScenarioExample(): Scenario {
+  const candidate = {
+    schemaVersion: 1,
+    id: 'scn_ejemplo-minimo',
+    name: 'Ejemplo mínimo',
+    description: 'Escenario de ejemplo con una mesa, una zona y una receta',
+    world: { lengthUnit: 'm', size: { width: 10, depth: 8 } },
+    seed: 42,
+    objects: [
+      {
+        id: 'obj_mesa-01',
+        kind: 'furniture',
+        name: 'Mesa 01',
+        position: { x: 2, y: 2 },
+        rotation: 0,
+        dimensions: { width: 1.2, depth: 0.8 },
+        interactionPoint: { x: 2, y: 1.2 },
+        zoneId: 'zone_salon',
+        tags: ['mesa'],
+        layer: 'furniture',
+        properties: { sillas: 4 },
+        capacity: 4,
+      },
+    ],
+    zones: [
+      {
+        id: 'zone_salon',
+        name: 'Salón',
+        category: 'dining',
+        bounds: {
+          min: { x: 0, y: 0 },
+          max: { x: 6, y: 8 },
+        },
+        allowedRoles: ['waiter', 'customer'],
+        accessRules: [],
+      },
+    ],
+    agents: [
+      {
+        id: 'agent_camarero-01',
+        displayName: 'Camarero 01',
+        role: 'waiter',
+        skills: ['atencion-salon'],
+        position: { x: 1, y: 1 },
+        speedMps: 1.3,
+        homeZoneId: 'zone_salon',
+        state: 'idle',
+      },
+    ],
+    taskTemplates: [
+      {
+        id: 'task_atender-mesa',
+        name: 'Atender mesa',
+        preconditions: ['mesa ocupada'],
+        steps: [
+          {
+            name: 'Tomar comanda',
+            durationSeconds: {
+              value: 120,
+              unit: 's',
+              sourceType: 'estimated',
+              confidence: 'low',
+            },
+            parallelizable: false,
+          },
+        ],
+        dependencies: [],
+        requiredResourceIds: [],
+        effects: ['pedido registrado'],
+        priority: 50,
+      },
+    ],
+    equipment: [
+      {
+        id: 'eq_plancha-01',
+        kind: 'griddle',
+        capacity: 4,
+        initialState: 'off',
+        warmupSeconds: {
+          value: 900,
+          unit: 's',
+          sourceType: 'estimated',
+          confidence: 'low',
+        },
+        targetTemperatureC: {
+          value: 190,
+          unit: 'C',
+          sourceType: 'estimated',
+          confidence: 'low',
+        },
+        usageRules: [],
+      },
+    ],
+    orders: [
+      {
+        id: 'order_0001',
+        items: [{ recipeId: 'recipe_hamburguesa', quantity: 1, modifiers: [] }],
+        priority: 'normal',
+        createdAtSeconds: 0,
+        promisedAtSeconds: 900,
+      },
+    ],
+    recipes: [
+      {
+        id: 'recipe_hamburguesa',
+        name: 'Hamburguesa',
+        components: [
+          { inventoryItemId: 'inv_carne', quantity: 150, unit: 'g' },
+          { inventoryItemId: 'inv_pan', quantity: 1, unit: 'unit' },
+        ],
+        steps: [
+          {
+            name: 'Cocinar carne',
+            kind: 'cook',
+            durationSeconds: {
+              value: 240,
+              unit: 's',
+              sourceType: 'estimated',
+              confidence: 'low',
+            },
+            targetTemperatureC: {
+              value: 190,
+              unit: 'C',
+              sourceType: 'estimated',
+              confidence: 'low',
+            },
+            requiredResourceIds: ['eq_plancha-01'],
+          },
+          {
+            name: 'Montar y emplatado',
+            kind: 'plate',
+            durationSeconds: {
+              value: 90,
+              unit: 's',
+              sourceType: 'estimated',
+              confidence: 'low',
+            },
+            requiredResourceIds: [],
+          },
+        ],
+      },
+    ],
+    inventory: [
+      {
+        id: 'inv_carne',
+        name: 'Carne de vacuno',
+        unit: 'g',
+        stock: 5000,
+        reorderPoint: 1000,
+        replenishmentQuantity: 5000,
+      },
+      {
+        id: 'inv_pan',
+        name: 'Pan de hamburguesa',
+        unit: 'unit',
+        stock: 60,
+        reorderPoint: 20,
+        replenishmentQuantity: 100,
+      },
+    ],
+    parameters: {},
+  }
+
+  return ScenarioSchema.parse(candidate)
+}
+
+/** Comprueba que un valor es un objeto plano (no array, no nulo). */
+export function isPlainObject(input: unknown): input is Record<string, unknown> {
+  return typeof input === 'object' && input !== null && !Array.isArray(input)
+}

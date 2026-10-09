@@ -90,6 +90,8 @@ jobs:
           path: |
             apps/web/test-results/
             apps/web/coverage/
+            packages/*/test-results/
+            packages/*/coverage/
             reports/
             ${{ runner.temp }}/smoke.html
           retention-days: 30

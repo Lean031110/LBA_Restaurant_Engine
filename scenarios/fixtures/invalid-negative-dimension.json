@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-dimension-negativa",
+  "name": "Fixture con dimensión negativa",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [
+    {
+      "id": "obj_mesa-01",
+      "kind": "furniture",
+      "position": { "x": 2, "y": 2 },
+      "rotation": 0,
+      "dimensions": { "width": -1.2, "depth": 0.8 },
+      "interactionPoint": { "x": 2, "y": 1.2 },
+      "tags": [],
+      "layer": "furniture",
+      "properties": {}
+    }
+  ],
+  "zones": [],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [],
+  "orders": [],
+  "recipes": [],
+  "inventory": [],
+  "parameters": {}
+}
