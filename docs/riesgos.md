@@ -1,0 +1,33 @@
+# Registro de riesgos y supuestos (FASE 00)
+
+Inventario inicial de riesgos, supuestos y bloqueos conocidos. Se revisa al cierre de cada fase. Formato inspirado en la guía: cada riesgo tiene impacto, probabilidad, mitigación y responsable de vigilancia.
+
+## Riesgos
+
+| ID | Riesgo | Impacto | Probabilidad | Mitigación | Vigilancia |
+|---|---|---|---|---|---|
+| R-01 | **Alcance enorme vs. iteraciones pequeñas**: 12 fases con criterios estrictos pueden desmotivar o inducir a saltarse verificaciones | Alto | Media | Disciplina de fase única; evidencia obligatoria; PR por fase con revisión del usuario | Cada cierre de fase |
+| R-02 | **Valores de simulación inventados**: tiempos/temperaturas sin fuente pueden presentarse como verdaderos | Alto | Media | Todo parámetro lleva `sourceType` (`measured`/`official_source`/`manufacturer`/`estimated`/`user_calibrated`), unidad y confianza; valores de ejemplo marcados como estimación | Fases 05, 08, 09 |
+| R-03 | **Dependencia con licencia incompatible** entra por el lockfile (transitivas) | Medio | Media | Informe de licencias del CI que falla ante licencia desconocida/no permitida; revisión manual en cada adición | Cada `npm install` |
+| R-04 | **Acoplamiento motor ↔ UI**: la tentación de poner lógica de simulación en React | Alto | Media | Regla arquitectónica: el motor no importa React/DOM/Konva/Three; tests del motor sin navegador | Fases 02–09 |
+| R-05 | **No determinismo accidental** (Math.random directo, iteración de Maps, temporizadores) | Alto | Media | PRNG con semilla inyectada; cola ordenada por `(time, priority, sequence)`; invariantes probados en CI | Fase 04+ |
+| R-06 | **Pérdida de datos de escenarios del usuario** al migrar formatos | Medio | Baja | `schemaVersion` + migraciones explícitas; import/export JSON siempre disponible | Fases 02, 03 |
+| R-07 | **Fugas de secretos en logs o artefactos de CI** | Alto | Baja | Sanitización del logger; `.gitignore` de `.env`; revisión de artefactos antes de cierre; el token de GitHub vive SOLO en el credential store local, nunca en el repo | Cada push |
+| R-08 | **Rendimiento**: cientos de agentes + rutas A* por tick pueden degradar la UI | Medio | Media | Motor por eventos (no por frame); benchmarks en fase 09; métricas de rendimiento en CI cuando existan | Fases 07, 09 |
+| R-09 | **Ecosistema TS en transición** (TypeScript 7 nativo, ESLint 10): versiones nuevas pueden romper el toolchain | Bajo | Media | Versiones fijadas con lockfile; TypeScript 6.0.3 elegido por compatibilidad con typescript-eslint (verificado 2026-10-09); actualizar con ADR | Cada fase |
+| R-10 | **Token de GitHub fine-grained sin permisos suficientes** para Actions/PR/protección de ramas | Medio | Baja | Verificado 2026-10-09: creación de repo, push y topics OK; se probará apertura de PR y ejecución de Actions en FASE 01 | FASE 01 |
+
+## Supuestos
+
+| ID | Supuesto | Base | Si falla |
+|---|---|---|---|
+| S-01 | El usuario decide el merge de cada PR (regla de la guía) | Guía maestra, regla 6 | El proyecto pierde su control de calidad |
+| S-02 | Node.js LTS 24 disponible localmente y en Actions | `node --version` = v24.21.0; setup-node lo instala desde `.nvmrc` | Fijar versión menor exacta en `.nvmrc` |
+| S-03 | Las duraciones/temperaturas iniciales del catálogo son **estimaciones editables**, no mediciones | Guía maestra (registro de parámetros) | Etiquetar todo como `estimated` hasta calibración del usuario |
+| S-04 | GitHub Actions es gratuito para repos públicos (límites amplios para este tamaño de proyecto) | Política pública de GitHub | Reducir jobs/matrix; consolidar pasos |
+| S-05 | La simulación NO certifica inocuidad alimentaria, accesibilidad ni normativa de construcción | Guía maestra y matriz de aceptación | Añadir avisos visibles en UI y documentación |
+
+## Bloqueos conocidos al 2026-10-09
+
+- Ninguno bloqueante para FASE 00. El repositorio `Lean031110/LBA_Restaurant_Engine` fue creado y verificado vía API; push a `main` funcionando con el token configurado localmente (sin exponerlo).
+- Pendiente de verificar en FASE 01: disparo real del workflow de Actions sobre un commit y conservación de artefactos ante fallo.
