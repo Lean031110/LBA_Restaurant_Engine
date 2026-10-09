@@ -1,0 +1,105 @@
+# CI de LBA_Restaurant_Engine — FASE 01 en adelante.
+#
+# Reglas de la guía (docs/guia/03_GITHUB_ACTIONS_LOGS_EVIDENCIAS.md):
+# - se dispara en push, pull_request y manual;
+# - Node fijado por .nvmrc y dependencias por lockfile (npm ci);
+# - reportes (JUnit, cobertura, licencias) se suben como artefactos
+#   INCLUSO si una prueba falla (if: always());
+# - permisos mínimos (solo lectura de contenidos);
+# - acciones fijadas por SHA completo verificado el 2026-10-09 vía API.
+name: CI
+
+on:
+  push:
+    branches: ['main', 'feat/**', 'fix/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Calidad (formato, lint, tipos, tests, build, auditorías)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # actions/checkout v7.0.1 — SHA verificado 2026-10-09
+      - name: Descargar repositorio
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      # actions/setup-node v7.1.0 — SHA verificado 2026-10-09
+      - name: Instalar Node LTS según .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Instalar dependencias (npm ci)
+        run: npm ci
+
+      - name: Comprobar formato (Prettier)
+        run: npm run format:check
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Typecheck (TypeScript)
+        run: npm run typecheck
+
+      - name: Tests con cobertura (Vitest, reporte JUnit)
+        run: npm run test
+
+      - name: Build de producción (Vite)
+        run: npm run build
+
+      - name: Smoke test del arranque (vite preview)
+        working-directory: apps/web
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          SERVIDOR=$!
+          trap 'kill $SERVIDOR 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:4173/ > "$RUNNER_TEMP/smoke.html" 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          grep -q '<title>LBA_Restaurant_Engine</title>' "$RUNNER_TEMP/smoke.html"
+          grep -q 'id="root"' "$RUNNER_TEMP/smoke.html"
+          echo "Smoke OK: la build sirve la página base."
+
+      - name: Auditoría de licencias de dependencias
+        run: npm run audit:licenses
+
+      - name: Auditoría de seguridad (npm audit, nivel high)
+        run: npm run audit:security
+
+      # Subida de evidencias: SIEMPRE, incluso con pasos en rojo arriba.
+      # actions/upload-artifact v7.0.2 — SHA verificado 2026-10-09
+      - name: Subir evidencias de CI (reportes y cobertura)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lba-ci-evidence-${{ github.sha }}
+          path: |
+            apps/web/test-results/
+            apps/web/coverage/
+            reports/
+            ${{ runner.temp }}/smoke.html
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Subir build de producción
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lba-build-${{ github.sha }}
+          path: apps/web/dist/
+          retention-days: 14
+          if-no-files-found: warn

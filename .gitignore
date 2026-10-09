@@ -16,6 +16,7 @@ playwright-report/
 junit*.xml
 license-report.json
 audit-report.json
+reports/
 
 # Entorno y secretos — JAMÁS subir tokens ni claves
 .env

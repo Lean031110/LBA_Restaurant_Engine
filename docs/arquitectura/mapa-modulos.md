@@ -43,27 +43,27 @@ LBA_Restaurant_Engine/
 
 ## Límites de responsabilidad por módulo
 
-| Módulo | Responsabilidad | Prohibido |
-|---|---|---|
-| `domain` | Tipos, IDs, unidades, esquemas de escenarios | Importar framework visual o APIs de navegador |
-| `simulation-core` | Recibe comandos y modelo; emite eventos de simulación. Reloj propio, unidades de mundo | Conocer píxeles; depender de `setInterval` como reloj del dominio |
-| `restaurant-model` | Semántica de encender una plancha, reservar capacidad, preparar receta, consumir stock, lavar plato | Lógica de UI |
-| `agent-decision` | Observa, propone acciones candidatas, verifica precondiciones, registra regla elegida | Llamar a un LLM remoto por decisión |
-| `spatial` | Convierte geometría en mapa transitable; calcula rutas | Decidir quién atiende un pedido |
-| `editor-2d` | Traduce operaciones de usuario en comandos validados, con undo/redo | Contener lógica central de simulación |
-| `workflow-editor` | Editar flujos como grafos de datos de dominio | Guardar el flujo solo como estado interno del editor |
-| `view-3d` | Traduce estado en meshes y animaciones visuales | Recalcular colas, temperaturas, trabajos ni tiempos; crear su propio reloj |
-| `analytics` | Consume el historial de eventos y agrega métricas | Modificar el resultado de la simulación |
-| `persistence` | Valida versión de formato, guarda, carga y migra proyectos | Perder datos silenciosamente |
+| Módulo             | Responsabilidad                                                                                     | Prohibido                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `domain`           | Tipos, IDs, unidades, esquemas de escenarios                                                        | Importar framework visual o APIs de navegador                              |
+| `simulation-core`  | Recibe comandos y modelo; emite eventos de simulación. Reloj propio, unidades de mundo              | Conocer píxeles; depender de `setInterval` como reloj del dominio          |
+| `restaurant-model` | Semántica de encender una plancha, reservar capacidad, preparar receta, consumir stock, lavar plato | Lógica de UI                                                               |
+| `agent-decision`   | Observa, propone acciones candidatas, verifica precondiciones, registra regla elegida               | Llamar a un LLM remoto por decisión                                        |
+| `spatial`          | Convierte geometría en mapa transitable; calcula rutas                                              | Decidir quién atiende un pedido                                            |
+| `editor-2d`        | Traduce operaciones de usuario en comandos validados, con undo/redo                                 | Contener lógica central de simulación                                      |
+| `workflow-editor`  | Editar flujos como grafos de datos de dominio                                                       | Guardar el flujo solo como estado interno del editor                       |
+| `view-3d`          | Traduce estado en meshes y animaciones visuales                                                     | Recalcular colas, temperaturas, trabajos ni tiempos; crear su propio reloj |
+| `analytics`        | Consume el historial de eventos y agrega métricas                                                   | Modificar el resultado de la simulación                                    |
+| `persistence`      | Valida versión de formato, guarda, carga y migra proyectos                                          | Perder datos silenciosamente                                               |
 
 ## Estado de creación de módulos
 
-| Módulo | Fase que lo crea | Estado |
-|---|---|---|
-| `apps/web` | 01 | Planificado |
-| `packages/*` | 02+ | No creado a propósito (regla de la guía) |
-| `scenarios/` | 02+ | No creado a propósito |
-| `.github/workflows` | 01 | Planificado |
+| Módulo              | Fase que lo crea | Estado                                   |
+| ------------------- | ---------------- | ---------------------------------------- |
+| `apps/web`          | 01               | Planificado                              |
+| `packages/*`        | 02+              | No creado a propósito (regla de la guía) |
+| `scenarios/`        | 02+              | No creado a propósito                    |
+| `.github/workflows` | 01               | Planificado                              |
 
 ## Comandos del motor hacia la UI (contrato futuro)
 

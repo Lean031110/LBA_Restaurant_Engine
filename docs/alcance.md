@@ -26,15 +26,15 @@ Construir un **simulador profesional de operaciones de restaurante** que ayude a
 
 ## Fuera del alcance ahora (exclusiones deliberadas)
 
-| Exclusión | Motivo | Condición para retomar |
-|---|---|---|
-| APK, instalador Windows, app nativa Linux, móvil Android | El compromiso actual es web local; empaquetar añade coste sin validar todavía el núcleo | Aprobar fase 11 y decidir con ADR |
-| Multijugador y sincronización en la nube | Rompería la reproducibilidad local y añade servidores/costes | Aprobación explícita post-fase 11 |
-| Sensores físicos | Fuera del dominio de un simulador de eventos discretos | No previsto |
-| IA externa obligatoria (LLM por agente/tick) | Los agentes son reglas, máquinas de estados y planificación explicable; una API remota rompe localidad, reproducibilidad y privacidad | Solo como auxiliar opcional en el futuro, verificado por el simulador |
-| Servidor comercial, cuentas de pago, dependencia de Internet durante la ejecución | Requisito de producto: gratuito y local | No previsto |
-| Motor de juego completo, editor de terceros incrustado, código GPL/AGPL | Política de licencias permisiva del proyecto (MIT/Apache/BSD/ISC/zlib) | Excepciones solo vía ADR aprobado |
-| Declaración de inocuidad alimentaria, accesibilidad normativa o seguridad física | Una simulación con valores estimados no certifica la realidad; los valores son editables y etiquetados por procedencia | Nunca sin medición y revisión competente |
+| Exclusión                                                                         | Motivo                                                                                                                                | Condición para retomar                                                |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| APK, instalador Windows, app nativa Linux, móvil Android                          | El compromiso actual es web local; empaquetar añade coste sin validar todavía el núcleo                                               | Aprobar fase 11 y decidir con ADR                                     |
+| Multijugador y sincronización en la nube                                          | Rompería la reproducibilidad local y añade servidores/costes                                                                          | Aprobación explícita post-fase 11                                     |
+| Sensores físicos                                                                  | Fuera del dominio de un simulador de eventos discretos                                                                                | No previsto                                                           |
+| IA externa obligatoria (LLM por agente/tick)                                      | Los agentes son reglas, máquinas de estados y planificación explicable; una API remota rompe localidad, reproducibilidad y privacidad | Solo como auxiliar opcional en el futuro, verificado por el simulador |
+| Servidor comercial, cuentas de pago, dependencia de Internet durante la ejecución | Requisito de producto: gratuito y local                                                                                               | No previsto                                                           |
+| Motor de juego completo, editor de terceros incrustado, código GPL/AGPL           | Política de licencias permisiva del proyecto (MIT/Apache/BSD/ISC/zlib)                                                                | Excepciones solo vía ADR aprobado                                     |
+| Declaración de inocuidad alimentaria, accesibilidad normativa o seguridad física  | Una simulación con valores estimados no certifica la realidad; los valores son editables y etiquetados por procedencia                | Nunca sin medición y revisión competente                              |
 
 ## Reglas de trabajo que gobiernan el alcance
 
