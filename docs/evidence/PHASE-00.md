@@ -1,6 +1,6 @@
 # Cierre de fase 00 — Descubrimiento del repositorio, alcance y contrato de trabajo
 
-- Estado: `APROBADA` (pendiente de merge del PR por parte del usuario, regla 6 del prompt maestro)
+- Estado: `APROBADA` — PR #1 fusionado en `main` (squash `15455d6`) por el propietario el 2026-10-09
 - Fecha UTC: 2026-10-09
 - Rama y PR: `feat/phase-00-contrato` → PR #1: https://github.com/Lean031110/LBA_Restaurant_Engine/pull/1
 - Commit SHA exacto: `80f1015` (documentos de fase) sobre base `800066c` (`main`, commit de constitución)
@@ -10,17 +10,17 @@
 
 ## Cambios realizados
 
-| Archivo/módulo | Cambio | Requisito relacionado |
-|---|---|---|
-| `README.md` | Readme completo del proyecto: misión, estado, stack, enlaces a guía y docs | Prompt 00.2 B |
-| `docs/alcance.md` | Objetivo, dentro/fuera de alcance, exclusiones deliberadas con condición de retorno | Prompt 00.2 B |
-| `docs/arquitectura/mapa-modulos.md` | Estructura prevista del repo y límites de responsabilidad por módulo | Prompt 00.2 B / guía 01 |
-| `docs/decisions/ADR-0001-stack-inicial.md` | Stack con versiones y licencias verificadas el 2026-10-09; alternativas descartadas | Prompt 00.2 B |
-| `docs/backlog.md` | Fases 00–11 con entregables y criterios de salida enlazados a la guía | Prompt 00.2 B |
-| `docs/riesgos.md` | 10 riesgos con impacto/probabilidad/mitigación, 5 supuestos, bloqueos conocidos | Prompt 00.2 B |
-| `CONTRIBUTING.md` | Convenciones de rama, commit, licencias, PR y evidencia | Repositorio profesional |
-| `SECURITY.md` | Política de secretos, datos de usuario y reporte de vulnerabilidades | Repositorio profesional |
-| `docs/evidence/PHASE-00.md` | Este informe | Prompt 00.4 D |
+| Archivo/módulo                             | Cambio                                                                              | Requisito relacionado   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------- |
+| `README.md`                                | Readme completo del proyecto: misión, estado, stack, enlaces a guía y docs          | Prompt 00.2 B           |
+| `docs/alcance.md`                          | Objetivo, dentro/fuera de alcance, exclusiones deliberadas con condición de retorno | Prompt 00.2 B           |
+| `docs/arquitectura/mapa-modulos.md`        | Estructura prevista del repo y límites de responsabilidad por módulo                | Prompt 00.2 B / guía 01 |
+| `docs/decisions/ADR-0001-stack-inicial.md` | Stack con versiones y licencias verificadas el 2026-10-09; alternativas descartadas | Prompt 00.2 B           |
+| `docs/backlog.md`                          | Fases 00–11 con entregables y criterios de salida enlazados a la guía               | Prompt 00.2 B           |
+| `docs/riesgos.md`                          | 10 riesgos con impacto/probabilidad/mitigación, 5 supuestos, bloqueos conocidos     | Prompt 00.2 B           |
+| `CONTRIBUTING.md`                          | Convenciones de rama, commit, licencias, PR y evidencia                             | Repositorio profesional |
+| `SECURITY.md`                              | Política de secretos, datos de usuario y reporte de vulnerabilidades                | Repositorio profesional |
+| `docs/evidence/PHASE-00.md`                | Este informe                                                                        | Prompt 00.4 D           |
 
 ## Inspección del repositorio (Prompt 00.1 A)
 
@@ -33,25 +33,25 @@
 
 ## Tests ejecutados
 
-| Comando/workflow | Resultado real | Conteo/detalle | Evidencia |
-|---|---|---|---|
-| `curl api.github.com/user` | OK | Cuenta del token identificada: `Lean031110` | Ejecutado en el entorno de desarrollo |
-| `curl api.github.com/repos/Lean031110/LBA_Restaurant_Engine` (pre-creación) | `404 Not Found` | Confirmación de que el repo no existía | Ejecutado en el entorno |
-| `npm view <paquete> version license` × 15 paquetes | OK | Versiones/licencias verificadas el 2026-10-09, registradas en ADR-0001 | ADR-0001 |
-| `git push origin main` / `git push origin feat/phase-00-contrato` | OK | Ambas ramas visibles en GitHub | Redirección `* [new branch]` en salida git |
-| Creación de PR vía API | OK | PR #1 creado | URL arriba |
+| Comando/workflow                                                            | Resultado real  | Conteo/detalle                                                         | Evidencia                                  |
+| --------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------- | ------------------------------------------ |
+| `curl api.github.com/user`                                                  | OK              | Cuenta del token identificada: `Lean031110`                            | Ejecutado en el entorno de desarrollo      |
+| `curl api.github.com/repos/Lean031110/LBA_Restaurant_Engine` (pre-creación) | `404 Not Found` | Confirmación de que el repo no existía                                 | Ejecutado en el entorno                    |
+| `npm view <paquete> version license` × 15 paquetes                          | OK              | Versiones/licencias verificadas el 2026-10-09, registradas en ADR-0001 | ADR-0001                                   |
+| `git push origin main` / `git push origin feat/phase-00-contrato`           | OK              | Ambas ramas visibles en GitHub                                         | Redirección `* [new branch]` en salida git |
+| Creación de PR vía API                                                      | OK              | PR #1 creado                                                           | URL arriba                                 |
 
 Validación de Markdown: sin herramienta de lint de Markdown instalada todavía (se evalúa en FASE 01 si procede); revisión manual de enlaces relativos realizada contra la estructura real de archivos.
 
 ## Criterios de salida
 
-| ID | Criterio | Estado | Evidencia concreta |
-|---|---|---|---|
-| 1 | Repositorio real identificado; rama/HEAD y cambios existentes documentados | PASS | `Lean031110/LBA_Restaurant_Engine`; `main@800066c`, `feat/phase-00-contrato@80f1015`; sin trabajo previo (repo nuevo); sección Inspección arriba |
-| 2 | Alcance y exclusiones registradas; no se ha creado trabajo fuera de fase | PASS | `docs/alcance.md`; este PR no contiene código de aplicación ni dependencias |
-| 3 | Stack y arquitectura inicial documentados con ADR, riesgos y alternativas | PASS | `ADR-0001-stack-inicial.md` con versiones+licencias verificadas, alternativas descartadas y condición de revisión; `docs/riesgos.md`; `docs/arquitectura/mapa-modulos.md` |
-| 4 | Backlog enlazado a fases 00–11 y criterios de salida | PASS | `docs/backlog.md` con tabla completa por fase |
-| 5 | Informe de evidencia existe; SHA y URLs no están inventados | PASS | Este archivo; SHA `80f1015` verificable con `git show`; PR #1 verificable en GitHub |
+| ID  | Criterio                                                                   | Estado | Evidencia concreta                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Repositorio real identificado; rama/HEAD y cambios existentes documentados | PASS   | `Lean031110/LBA_Restaurant_Engine`; `main@800066c`, `feat/phase-00-contrato@80f1015`; sin trabajo previo (repo nuevo); sección Inspección arriba                          |
+| 2   | Alcance y exclusiones registradas; no se ha creado trabajo fuera de fase   | PASS   | `docs/alcance.md`; este PR no contiene código de aplicación ni dependencias                                                                                               |
+| 3   | Stack y arquitectura inicial documentados con ADR, riesgos y alternativas  | PASS   | `ADR-0001-stack-inicial.md` con versiones+licencias verificadas, alternativas descartadas y condición de revisión; `docs/riesgos.md`; `docs/arquitectura/mapa-modulos.md` |
+| 4   | Backlog enlazado a fases 00–11 y criterios de salida                       | PASS   | `docs/backlog.md` con tabla completa por fase                                                                                                                             |
+| 5   | Informe de evidencia existe; SHA y URLs no están inventados                | PASS   | Este archivo; SHA `80f1015` verificable con `git show`; PR #1 verificable en GitHub                                                                                       |
 
 ## Capturas/logs/reportes
 
@@ -62,17 +62,17 @@ Validación de Markdown: sin herramienta de lint de Markdown instalada todavía 
 
 ## Licencias, assets y supply chain
 
-- **Cero dependencias instaladas en esta fase** (regla del prompt 00.2 B: no instalar librerías si no hace falta). Las versiones citadas en ADR-0001 solo se *consultaron* en npm, no se incorporaron.
+- **Cero dependencias instaladas en esta fase** (regla del prompt 00.2 B: no instalar librerías si no hace falta). Las versiones citadas en ADR-0001 solo se _consultaron_ en npm, no se incorporaron.
 - Licencia propia: MIT, `Copyright (c) 2026 Leandro (@lean0311g)` (texto íntegro en `LICENSE`), conforme a `docs/guia/02_RECURSOS_LICENCIAS_Y_PARAMETROS.md`.
 - Sin activos de terceros incorporados.
 - Confirmación de ausencia de secretos: el token GitHub solo existe en el credential store local; revisados los archivos del commit (documentación Markdown) sin credenciales.
 
 ## Bugs y limitaciones pendientes
 
-| Problema | Reproducción | Impacto | Módulo | Próxima acción |
-|---|---|---|---|---|
-| El nombre de cuenta real (`Lean031110`) difiere del citado en la guía (`lean0311g`) | Cualquier enlace interno de la guía que referencie `lean0311g/...` | Bajo (la guía se conserva inalterada a propósito) | docs | Aceptado; los documentos del proyecto usan la cuenta real |
-| Sin CI todavía | — | Bajo (fase documental) | — | FASE 01 introduce el workflow |
+| Problema                                                                            | Reproducción                                                       | Impacto                                           | Módulo | Próxima acción                                            |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------- | ------ | --------------------------------------------------------- |
+| El nombre de cuenta real (`Lean031110`) difiere del citado en la guía (`lean0311g`) | Cualquier enlace interno de la guía que referencie `lean0311g/...` | Bajo (la guía se conserva inalterada a propósito) | docs   | Aceptado; los documentos del proyecto usan la cuenta real |
+| Sin CI todavía                                                                      | —                                                                  | Bajo (fase documental)                            | —      | FASE 01 introduce el workflow                             |
 
 ## Riesgos/diferencias
 
@@ -87,4 +87,4 @@ Validación de Markdown: sin herramienta de lint de Markdown instalada todavía 
 - [x] Se puede avanzar a la fase siguiente.
 - [ ] No se avanza; corregir los puntos señalados.
 
-Justificación: los 5 criterios obligatorios de salida están en `PASS` con evidencia verificable (SHA reales, PR real, inspección documentada, cero dependencias, cero secretos). El merge del PR #1 queda en manos del usuario conforme a la regla 6 del prompt maestro; la FASE 01 puede comenzar en rama apilada y su CI validará el árbol completo.
+Justificación: los 5 criterios obligatorios de salida están en `PASS` con evidencia verificable (SHA reales, PR real, inspección documentada, cero dependencias, cero secretos). El PR #1 fue fusionado por el propietario en `main` (squash `15455d6`, 2026-10-09); la FASE 01 se desarrolló en rama apilada sobre este trabajo y su CI validó el árbol completo.

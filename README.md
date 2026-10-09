@@ -4,12 +4,12 @@
 
 **LBA Restaurant Engine** es un laboratorio virtual de operaciones: dibuja tu local en 2D (paredes, puertas, mesas, equipos, zonas), define roles, recetas, equipos e inventario, y ejecuta simulaciones reproducibles para **identificar cuellos de botella antes de abrir o reorganizar un negocio**. La vista 3D (fase 10) será una forma más de observar la misma simulación, no un segundo motor.
 
-|  | |
-|---|---|
-| **Estado** | 🚧 En desarrollo — FASE 00 (descubrimiento y contrato) |
-| **Stack** | TypeScript · React 19 · Vite · Konva (editor 2D) · motor propio de eventos discretos · Vitest · Three.js (fase 10) |
-| **Licencia** | [MIT](LICENSE) — `Copyright (c) 2026 Leandro (@lean0311g)` |
-| **Idioma** | Español (documentación y UI) |
+|              |                                                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Estado**   | 🚧 En desarrollo — FASE 01 (base técnica, CI y logs)                                                                              |
+| **Stack**    | TypeScript 6 · React 19 · Vite 8 · Konva (editor 2D, fase 03) · motor propio de eventos discretos · Vitest 5 · Three.js (fase 10) |
+| **Licencia** | [MIT](LICENSE) — `Copyright (c) 2026 Leandro (@lean0311g)`                                                                        |
+| **Idioma**   | Español (documentación y UI)                                                                                                      |
 
 ## Guía maestra del proyecto
 
@@ -28,27 +28,32 @@ El desarrollo está gobernado por una guía maestra completa que se conserva en 
 
 ## Documentación del proyecto
 
-| Documento | Contenido |
-|---|---|
-| [Alcance y exclusiones](docs/alcance.md) | Qué se construye, qué queda fuera y por qué |
-| [Mapa de módulos](docs/arquitectura/mapa-modulos.md) | Estructura del repo y límites de responsabilidad |
-| [ADR-0001 — Stack inicial](docs/decisions/ADR-0001-stack-inicial.md) | Decisiones técnicas con versiones y licencias verificadas |
-| [Backlog maestro](docs/backlog.md) | Fases 00–11 con criterios de salida |
-| [Riesgos y supuestos](docs/riesgos.md) | Inventario de riesgos con mitigaciones |
-| [Evidencias de fase](docs/evidence/) | Informes de cierre por fase (SHA, Actions, artefactos) |
+| Documento                                                                                    | Contenido                                                 |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [Alcance y exclusiones](docs/alcance.md)                                                     | Qué se construye, qué queda fuera y por qué               |
+| [Mapa de módulos](docs/arquitectura/mapa-modulos.md)                                         | Estructura del repo y límites de responsabilidad          |
+| [ADR-0001 — Stack inicial](docs/decisions/ADR-0001-stack-inicial.md)                         | Decisiones técnicas con versiones y licencias verificadas |
+| [ADR-0002 — Excepciones de licencia](docs/decisions/ADR-0002-licencias-transitivas-build.md) | Evaluación de licencias transitivas del toolchain         |
+| [Backlog maestro](docs/backlog.md)                                                           | Fases 00–11 con criterios de salida                       |
+| [Riesgos y supuestos](docs/riesgos.md)                                                       | Inventario de riesgos con mitigaciones                    |
+| [Evidencias de fase](docs/evidence/)                                                         | Informes de cierre por fase (SHA, Actions, artefactos)    |
 
-## Ejecutar en local (disponible desde FASE 01)
+## Ejecutar en local
 
-Requisitos: Node.js 24 LTS (ver `.nvmrc`).
+Requisitos: Node.js 24 LTS (la versión exacta está fijada en `.nvmrc`).
 
 ```bash
-npm ci        # instala dependencias exactas del lockfile
-npm run dev   # app de desarrollo (apps/web)
-npm test      # pruebas unitarias e integración
-npm run build # build de producción
+npm ci               # instala dependencias exactas del lockfile
+npm run dev          # app de desarrollo → http://localhost:5173
+npm test             # pruebas unitarias/integración con cobertura (Vitest)
+npm run lint         # ESLint
+npm run typecheck    # TypeScript sin emitir
+npm run build        # build de producción (apps/web/dist)
+npm run audit:licenses  # informe de licencias de dependencias
+npm run audit:security  # npm audit (nivel high)
 ```
 
-> Hasta cerrar la FASE 01, la app todavía no existe; esta sección se activa con esa fase.
+La pantalla base muestra el layout del producto (controles de simulación, herramientas, lienzo, inspector, eventos/estadísticas) con los paneles de fases futuras deshabilitados y su fase prevista, más el **panel de diagnóstico**: registro estructurado de la aplicación con niveles, códigos de evento, sanitización de secretos y exportación JSONL.
 
 ## Cómo contribuir
 
@@ -56,4 +61,4 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md). Resumen: rama + PR por entrega, fases si
 
 ## Créditos y licencias de terceros
 
-Proyecto bajo [MIT](LICENSE). Las licencias de las dependencias se detallan en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) y se auditan automáticamente en CI. Si construyes sobre este proyecto, se agradece el reconocimiento: *“Basado en LBA_Restaurant_Engine, por @lean0311g”*.
+Proyecto bajo [MIT](LICENSE). Las licencias de las dependencias se detallan en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) y se auditan automáticamente en CI. Si construyes sobre este proyecto, se agradece el reconocimiento: _“Basado en LBA_Restaurant_Engine, por @lean0311g”_.

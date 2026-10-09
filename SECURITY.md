@@ -3,7 +3,7 @@
 ## Secretos y credenciales
 
 - **Nunca** se suben tokens, contraseñas, claves API ni archivos `.env` al repositorio, a los logs ni a los artefactos de CI.
-- El token de GitHub del entorno de desarrollo vive únicamente en el *credential store* local del equipo del desarrollador (`~/.git-credentials`, permisos `600`), jamás en el código.
+- El token de GitHub del entorno de desarrollo vive únicamente en el _credential store_ local del equipo del desarrollador (`~/.git-credentials`, permisos `600`), jamás en el código.
 - El `.gitignore` excluye `.env*`, `*.pem`, `*.key`, `secrets/`, `credentials/`.
 
 ## Datos de usuario

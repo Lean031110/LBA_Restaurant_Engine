@@ -13,23 +13,23 @@ El proyecto necesita una base técnica para un simulador de operaciones de resta
 
 Adoptar el stack siguiente, verificado en npm/GitHub el **9 de octubre de 2026**:
 
-| Capa | Elección | Versión verificada | Licencia |
-|---|---|---|---|
-| Lenguaje | TypeScript (línea 6.x, no la 7.x nativa aún) | 6.0.3 | Apache-2.0 |
-| UI | React + react-dom | 19.3.0 | MIT |
-| Build/Dev | Vite + @vitejs/plugin-react | 8.3.4 / 6.1.2 | MIT |
-| Editor 2D (fase 03) | Konva + react-konva | a fijar en fase 03 | MIT |
-| Editor de flujos (fase 05/06) | @xyflow/react | a fijar en su fase | MIT |
-| Vista 3D (fase 10) | three | a fijar en fase 10 | MIT |
-| Tests unitarios/integración | Vitest + @vitest/coverage-v8 | 5.0.3 | MIT |
-| DOM de pruebas | jsdom | 30.1.2 | MIT |
-| Lint | ESLint + typescript-eslint + plugins react-hooks/react-refresh | 10.12.0 / 8.71.1 | MIT |
-| Formato | Prettier | 3.9.9 | MIT |
-| Estado UI (cuando haga falta) | Zustand — solo si reduce complejidad | a fijar | MIT |
-| Validación de esquemas (fase 02) | Zod — candidato | a fijar | MIT |
-| Persistencia local (fase 03+) | IndexedDB directo; Dexie opcional con ADR | a fijar | Apache-2.0 (Dexie) |
-| CI | GitHub Actions (acciones fijadas por SHA completo) | checkout v7.0.1, setup-node v7.1.0, upload-artifact v7.0.2 | MIT |
-| Motor de simulación | **Propio, TypeScript**, eventos discretos deterministas | — | — |
+| Capa                             | Elección                                                       | Versión verificada                                         | Licencia           |
+| -------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | ------------------ |
+| Lenguaje                         | TypeScript (línea 6.x, no la 7.x nativa aún)                   | 6.0.3                                                      | Apache-2.0         |
+| UI                               | React + react-dom                                              | 19.3.0                                                     | MIT                |
+| Build/Dev                        | Vite + @vitejs/plugin-react                                    | 8.3.4 / 6.1.2                                              | MIT                |
+| Editor 2D (fase 03)              | Konva + react-konva                                            | a fijar en fase 03                                         | MIT                |
+| Editor de flujos (fase 05/06)    | @xyflow/react                                                  | a fijar en su fase                                         | MIT                |
+| Vista 3D (fase 10)               | three                                                          | a fijar en fase 10                                         | MIT                |
+| Tests unitarios/integración      | Vitest + @vitest/coverage-v8                                   | 5.0.3                                                      | MIT                |
+| DOM de pruebas                   | jsdom                                                          | 30.1.2                                                     | MIT                |
+| Lint                             | ESLint + typescript-eslint + plugins react-hooks/react-refresh | 10.12.0 / 8.71.1                                           | MIT                |
+| Formato                          | Prettier                                                       | 3.9.9                                                      | MIT                |
+| Estado UI (cuando haga falta)    | Zustand — solo si reduce complejidad                           | a fijar                                                    | MIT                |
+| Validación de esquemas (fase 02) | Zod — candidato                                                | a fijar                                                    | MIT                |
+| Persistencia local (fase 03+)    | IndexedDB directo; Dexie opcional con ADR                      | a fijar                                                    | Apache-2.0 (Dexie) |
+| CI                               | GitHub Actions (acciones fijadas por SHA completo)             | checkout v7.0.1, setup-node v7.1.0, upload-artifact v7.0.2 | MIT                |
+| Motor de simulación              | **Propio, TypeScript**, eventos discretos deterministas        | —                                                          | —                  |
 
 Versiones exactas instaladas en FASE 01 con lockfile comprometido (`package-lock.json`).
 

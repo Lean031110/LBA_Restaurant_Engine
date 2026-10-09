@@ -1,0 +1,265 @@
+/* LBA_Restaurant_Engine — estilos de la pantalla base (FASE 01).
+   Minimalistas y utilitarios: el diseño visual real llega con el editor 2D. */
+
+:root {
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-border: #d9dee5;
+  --color-text: #1f2733;
+  --color-text-muted: #5b6673;
+  --color-accent: #0f6f5c;
+  --color-accent-soft: #e3f1ee;
+  --color-error: #b3261e;
+  --color-warn: #9a6700;
+  --color-debug: #57632f;
+  --radius: 6px;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 720px;
+}
+
+/* Cabecera con nombre y controles de simulación */
+.app__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app__title {
+  font-size: 16px;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+.app__subtitle {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.app__sim-controls {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+button {
+  font: inherit;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Zona central: herramientas | lienzo | inspector */
+.app__main {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  flex: 1;
+  min-height: 0;
+}
+
+.app__toolbar {
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 12px;
+}
+
+.app__canvas {
+  background:
+    linear-gradient(var(--color-border) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--color-bg);
+}
+
+.app__inspector {
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 12px;
+}
+
+/* Pie: eventos/estadísticas o diagnóstico */
+.app__footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
+}
+
+.app__log-toggle {
+  align-self: flex-end;
+}
+
+/* Paneles de marcador de posición */
+.placeholder-panel {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 16px 8px;
+}
+
+.placeholder-panel h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.placeholder-panel p {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.placeholder-panel__phase {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 11px;
+}
+
+/* Panel de diagnóstico */
+.log-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.log-panel__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.log-panel__title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.log-panel__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.log-panel__empty {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.log-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry--error {
+  color: var(--color-error);
+  background: #fdeceb;
+}
+
+.log-entry--warn {
+  color: var(--color-warn);
+  background: #fff8e6;
+}
+
+.log-entry--debug {
+  color: var(--color-debug);
+}
+
+.log-entry__time {
+  color: var(--color-text-muted);
+}
+
+.log-entry__code {
+  font-weight: 700;
+}
+
+.log-entry__module {
+  color: var(--color-text-muted);
+}
+
+/* Límite de errores */
+.error-boundary {
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.error-boundary__message {
+  font-family: monospace;
+  color: var(--color-error);
+  padding: 8px;
+  background: #fdeceb;
+  border-radius: var(--radius);
+  word-break: break-word;
+}
