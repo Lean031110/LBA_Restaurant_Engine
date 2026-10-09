@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+test-results/
+package-lock.json
+docs/guia/
+LICENSE
+*.min.*
