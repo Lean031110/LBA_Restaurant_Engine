@@ -26,7 +26,7 @@ Adoptar el stack siguiente, verificado en npm/GitHub el **9 de octubre de 2026**
 | Lint                             | ESLint + typescript-eslint + plugins react-hooks/react-refresh | 10.12.0 / 8.71.1                                           | MIT                |
 | Formato                          | Prettier                                                       | 3.9.9                                                      | MIT                |
 | Estado UI (cuando haga falta)    | Zustand — solo si reduce complejidad                           | a fijar                                                    | MIT                |
-| Validación de esquemas (fase 02) | Zod — candidato                                                | a fijar                                                    | MIT                |
+| Validación de esquemas (fase 02) | Zod — adoptado en FASE 02 (prompt 02.1)                        | 4.6.5 (ya presente en el lockfile)                         | MIT                |
 | Persistencia local (fase 03+)    | IndexedDB directo; Dexie opcional con ADR                      | a fijar                                                    | Apache-2.0 (Dexie) |
 | CI                               | GitHub Actions (acciones fijadas por SHA completo)             | checkout v7.0.1, setup-node v7.1.0, upload-artifact v7.0.2 | MIT                |
 | Motor de simulación              | **Propio, TypeScript**, eventos discretos deterministas        | —                                                          | —                  |

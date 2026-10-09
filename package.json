@@ -30,7 +30,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test --workspace @lba/web",
+    "test": "npm run test --workspaces --if-present",
     "audit:licenses": "node scripts/audit-licenses.mjs",
     "audit:security": "npm audit --audit-level=high"
   }

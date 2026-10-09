@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 99,
+  "id": "scn_fixture-version-desconocida",
+  "name": "Fixture con versión de esquema desconocida",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [],
+  "zones": [],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [],
+  "orders": [],
+  "recipes": [],
+  "inventory": [],
+  "parameters": {}
+}

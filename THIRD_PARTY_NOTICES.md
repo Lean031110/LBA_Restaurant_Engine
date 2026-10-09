@@ -11,6 +11,14 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 | react     | 19.3.0  | MIT      | https://react.dev | Biblioteca de interfaz         |
 | react-dom | 19.3.0  | MIT      | https://react.dev | Renderizado de React en el DOM |
 
+## Dependencias directas — runtime (packages/domain, FASE 02)
+
+| Paquete | Versión | Licencia | URL oficial     | Finalidad                                             |
+| ------- | ------- | -------- | --------------- | ----------------------------------------------------- |
+| zod     | 4.6.5   | MIT      | https://zod.dev | Validación de esquemas del dominio con rutas de campo |
+
+> Nota: `zod@4.6.5` ya figuraba en el árbol de dependencias (transitiva de `eslint-plugin-react-hooks`) y fue verificada de nuevo (licencia MIT, auditoría del CI) antes de promoverla a dependencia directa de `@lba/domain` en la FASE 02; no añade paquetes nuevos al lockfile.
+
 ## Dependencias directas — desarrollo (apps/web)
 
 | Paquete                   | Versión | Licencia   | URL oficial                                        | Finalidad                      |

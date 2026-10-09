@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "scn_fixture-procedencia-invalida",
+  "name": "Fixture con procedencia de parámetro inválida",
+  "world": {
+    "lengthUnit": "m",
+    "size": { "width": 10, "depth": 8 }
+  },
+  "seed": 42,
+  "objects": [],
+  "zones": [],
+  "agents": [],
+  "taskTemplates": [],
+  "equipment": [
+    {
+      "id": "eq_plancha-01",
+      "kind": "griddle",
+      "capacity": 4,
+      "initialState": "off",
+      "warmupSeconds": {
+        "value": 900,
+        "unit": "s",
+        "sourceType": "adivinado",
+        "confidence": "low"
+      },
+      "usageRules": []
+    }
+  ],
+  "orders": [],
+  "recipes": [],
+  "inventory": [],
+  "parameters": {}
+}
