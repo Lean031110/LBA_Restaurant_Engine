@@ -5,7 +5,7 @@ Gracias por tu interés. Este proyecto sigue una **disciplina de fases estricta*
 ## Reglas básicas
 
 1. **No se salta fases.** La secuencia es FASE 00 → 11. Cada fase tiene criterios de salida verificables en su archivo de `docs/guia/FASES/`.
-2. **Rama + PR por entrega.** No se hace push directo a `main` (salvo el commit inicial de constitución del repositorio). El merge lo decide el propietario.
+2. **Rama + PR por entrega.** No se hace push directo a `main` (salvo el commit inicial de constitución del repositorio). El merge se ejecuta solo tras verificación completa —checks del SHA final en verde, conflictos resueltos, sin pérdida de cambios de `main`, pruebas y auditorías reales, evidencias publicadas— conforme a la autorización del propietario (2026-10-09) para que el agente fusione sus propios PR verificados, preferentemente con squash.
 3. **Convención de ramas:** `feat/phase-XX-descripcion`, `fix/phase-XX-descripcion`, `docs/phase-XX-descripcion`.
 4. **Convención de commits:** `tipo(scope): descripción en presente`, p. ej. `feat(phase-03): add wall drawing tool`. Referencia fase e iteración cuando aplique.
 5. **Cambios pequeños.** Varios commits claros valen más que uno monolítico.

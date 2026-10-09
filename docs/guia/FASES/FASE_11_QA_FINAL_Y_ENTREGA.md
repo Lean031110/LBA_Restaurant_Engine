@@ -61,7 +61,7 @@ Lee el `00_PROMPT_MAESTRO_CODEX.md` y las guías maestras. Copia un único promp
 
 > **Instrucción para Codex:** Ejecuta solo esta iteración de la FASE 11. No avances a otra iteración automáticamente.
 >
-> Ejecuta CI final en el SHA candidate exacto, revisa su URL y todos sus artifacts. Actualiza matriz de aceptación y notas de versión; enumera limitaciones no resueltas. No llames “completo” a algo no probado en dispositivo físico. Deja rama/PR para revisión del usuario; no hagas merge ni empaquetes instaladores nativos. La fase solo se aprueba si todos los criterios obligatorios de esta fase son PASS o si una excepción de alcance documentada está aprobada explícitamente por el usuario.
+> Ejecuta CI final en el SHA candidate exacto, revisa su URL y todos sus artifacts. Actualiza matriz de aceptación y notas de versión; enumera limitaciones no resueltas. No llames “completo” a algo no probado en dispositivo físico. Deja rama/PR con verificación completa conforme a la política de integración (autorización expresa del propietario, 2026-10-09): el merge queda prohibido si algún criterio obligatorio no está en PASS; no empaquetes instaladores nativos. La fase solo se aprueba si todos los criterios obligatorios de esta fase son PASS o si una excepción de alcance documentada está aprobada explícitamente por el usuario.
 
 </details>
 

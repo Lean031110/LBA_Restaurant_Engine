@@ -42,6 +42,19 @@ Cada problema debe tener reproducción, impacto, módulo y próxima acción. No 
 - Supuestos de simulación no medidos:
 - Cambios de alcance con ADR:
 
+## Verificación previa al merge (política de integración)
+
+Conforme a la autorización expresa del propietario (2026-10-09), el merge (squash) de un PR solo se ejecuta si TODO lo siguiente está verificado:
+
+- [ ] Checks obligatorios en verde sobre el SHA final exacto (sin ejecuciones canceladas, checks omitidos ni fallos ignorados).
+- [ ] Conflictos de integración resueltos preservando los cambios válidos de ambas partes; GitHub informa el PR como fusionable.
+- [ ] La integración no pierde cambios válidos de `main`.
+- [ ] Pruebas y auditorías (licencias, seguridad) ejecutadas y en verde; sin aserciones debilitadas para conseguir resultados verdes.
+- [ ] Evidencias y artefactos publicados e inspeccionados.
+- [ ] Sin problemas de seguridad pendientes que invaliden la entrega.
+
+Si alguna condición falla: no fusionar; corregir, volver a ejecutar las verificaciones y dejar registro en este informe.
+
 ## Decisión
 
 - [ ] Se puede avanzar a la fase siguiente.

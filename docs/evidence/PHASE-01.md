@@ -1,6 +1,6 @@
 # Cierre de fase 01 — Base web ejecutable, toolchain, CI y diagnóstico
 
-- Estado: `APROBADA` (pendiente de merge del PR por parte del usuario, regla 6 del prompt maestro)
+- Estado: `APROBADA` — merge del PR #2 ejecutable bajo la política de integración verificada (autorización expresa del propietario, 2026-10-09)
 - Fecha UTC: 2026-10-09
 - Rama y PR: `feat/phase-01-base-tecnica` (apilada sobre `feat/phase-00-contrato`) → PR #2: https://github.com/Lean031110/LBA_Restaurant_Engine/pull/2
 - Commit SHA exacto: `24ee124aace5bdb0ad26cbd6d854e460fb4e605e` (`ci(phase-01): workflow Actions con evidencias, auditoría de licencias y ADR-0002`)
@@ -106,4 +106,4 @@ Prueba de error controlado (prompt 01.4 D): el botón «Provocar error controlad
 - [x] Se puede avanzar a la fase siguiente.
 - [ ] No se avanza; corregir los puntos señalados.
 
-Justificación: los 5 criterios obligatorios están en `PASS` con evidencia local y remota verificable (workflow verde sobre el SHA exacto, 33/33 pruebas, cobertura sobre umbral, 0 vulnerabilidades, licencias auditadas con ADR, secretos excluidos y verificados). Los dos PR (#1 FASE 00, #2 FASE 01) quedan a la espera del merge por parte del usuario, conforme a la regla 6 del prompt maestro. La FASE 02 (modelo de datos y catálogo) puede comenzar tras el merge o en rama apilada si el usuario lo autoriza.
+Justificación: los 5 criterios obligatorios están en `PASS` con evidencia local y remota verificable (workflow verde sobre el SHA exacto, 33/33 pruebas, cobertura sobre umbral, 0 vulnerabilidades, licencias auditadas con ADR, secretos excluidos y verificados). El PR #1 (FASE 00) ya está fusionado en `main` (squash `15455d6`). El PR #2 (FASE 01) se fusiona conforme a la política de integración verificada (autorización expresa del propietario, 2026-10-09): checks obligatorios en verde sobre el SHA final, conflictos resueltos sin pérdida de cambios de `main`, pruebas y auditorías reales, evidencias publicadas. La FASE 02 (modelo de datos y catálogo) comienza tras confirmar la integración.

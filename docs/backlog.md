@@ -5,7 +5,7 @@ Fuente: `docs/guia/FASES/` (criterios de salida por fase). Este backlog es el í
 ## Reglas
 
 - Una fase no empieza hasta que la anterior esté `APROBADA` en `docs/evidence/PHASE-XX.md`.
-- Cada entrega va en rama de trabajo + PR; el merge lo decide el usuario.
+- Cada entrega va en rama de trabajo + PR; el merge (squash) se ejecuta solo tras la verificación completa de calidad, seguridad e integración del PR (autorización del propietario, 2026-10-09).
 - Los problemas detectados se registran como issues con la plantilla `docs/guia/PLANTILLAS/INCIDENCIA.md`.
 
 ## Tabla de fases

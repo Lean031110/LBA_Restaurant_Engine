@@ -41,7 +41,7 @@ Construir un **simulador profesional de operaciones de restaurante** que ayude a
 1. **No saltar fases**: la fase activa es la única autorizada (secuencia 00→11).
 2. **Una interacción = un prompt numerado** de la guía.
 3. **No declarar éxito sin evidencia**: comando, resultado real, conteos, artefactos y URL de Actions.
-4. **CI obligatorio** y **sin merge automático**: los cambios van por rama + PR; el merge final lo decide el usuario.
+4. **CI obligatorio** y **merge verificado**: los cambios van por rama + PR; el merge se ejecuta solo tras la verificación completa de calidad, seguridad e integración del PR (autorización del propietario, 2026-10-09).
 5. **Licencias comprobadas antes de instalar** cualquier paquete o activo.
 6. **Separación modelo/presentación**: el motor no importa React, DOM, Konva ni Three.js.
 7. **Dos sistemas de registro diferenciados**: log diagnóstico de la app e historial de eventos de simulación.

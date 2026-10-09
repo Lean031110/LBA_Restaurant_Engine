@@ -1,6 +1,6 @@
 # Cierre de fase 00 — Descubrimiento del repositorio, alcance y contrato de trabajo
 
-- Estado: `APROBADA` (pendiente de merge del PR por parte del usuario, regla 6 del prompt maestro)
+- Estado: `APROBADA` — PR #1 fusionado en `main` (squash `15455d6`) por el propietario el 2026-10-09
 - Fecha UTC: 2026-10-09
 - Rama y PR: `feat/phase-00-contrato` → PR #1: https://github.com/Lean031110/LBA_Restaurant_Engine/pull/1
 - Commit SHA exacto: `80f1015` (documentos de fase) sobre base `800066c` (`main`, commit de constitución)
@@ -87,4 +87,4 @@ Validación de Markdown: sin herramienta de lint de Markdown instalada todavía 
 - [x] Se puede avanzar a la fase siguiente.
 - [ ] No se avanza; corregir los puntos señalados.
 
-Justificación: los 5 criterios obligatorios de salida están en `PASS` con evidencia verificable (SHA reales, PR real, inspección documentada, cero dependencias, cero secretos). El merge del PR #1 queda en manos del usuario conforme a la regla 6 del prompt maestro; la FASE 01 puede comenzar en rama apilada y su CI validará el árbol completo.
+Justificación: los 5 criterios obligatorios de salida están en `PASS` con evidencia verificable (SHA reales, PR real, inspección documentada, cero dependencias, cero secretos). El PR #1 fue fusionado por el propietario en `main` (squash `15455d6`, 2026-10-09); la FASE 01 se desarrolló en rama apilada sobre este trabajo y su CI validó el árbol completo.
