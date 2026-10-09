@@ -1,0 +1,44 @@
+# Dependencias
+node_modules/
+
+# Builds y caches
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+.eslintcache
+.cache/
+
+# Informes de pruebas locales (los oficiales viven como artefactos de Actions)
+test-results/
+playwright-report/
+junit*.xml
+license-report.json
+audit-report.json
+
+# Entorno y secretos — JAMÁS subir tokens ni claves
+.env
+.env.*
+*.pem
+*.key
+secrets/
+credentials/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Logs locales
+logs/
+*.log
+npm-debug.log*
+
+# Datos de usuario (generados por la app en pruebas locales)
+.data/
+*.local
