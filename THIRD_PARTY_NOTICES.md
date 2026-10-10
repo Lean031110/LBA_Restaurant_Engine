@@ -24,6 +24,10 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 - **Sin código de terceros**: el paquete declara datos (presets, materiales, propiedades, iconos) y reutiliza los esquemas de `@lba/domain`; su única dependencia de runtime es `zod@4.6.5` (workspace `@lba/domain`, misma versión ya verificada arriba), y las de desarrollo coinciden con las existentes (typescript, vitest, coverage-v8). El lockfile solo añade el link del workspace.
 - **Iconos vectoriales**: los 22 trazados SVG de `src/icons.ts` son obra original de este proyecto (geometría básica dibujada a mano; sin descargas ni redistribución de recursos de terceros), cubiertos por la licencia MIT del proyecto. No hay activos de terceros en el catálogo.
 
+## packages/persistence (FASE 02, prompt 02.3)
+
+- **Sin código de terceros**: importación/exportación de escenarios sobre `@lba/domain` (workspace) y JSON nativo; ni una dependencia externa nueva (el lockfile solo añade el link). Las herramientas de desarrollo (typescript, vitest, coverage-v8) coinciden con las ya verificadas; los fixtures usados por las pruebas son los propios de `scenarios/fixtures`.
+
 ## Dependencias directas — desarrollo (apps/web)
 
 | Paquete                   | Versión | Licencia   | URL oficial                                        | Finalidad                      |

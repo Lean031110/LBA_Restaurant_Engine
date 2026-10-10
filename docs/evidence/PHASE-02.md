@@ -156,18 +156,54 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 - Commit sobre la rama `feat/phase-02-modelo-datos-catalogo` (apilado tras 02.1-c). SIN push, SIN PR, SIN merge (misma política que la correctiva).
 - Al publicar: push → PR (cuerpo con checklist real) → Actions sobre el SHA exacto → artefactos escaneados → `PHASE-02.md` actualizado con SHA/URLs reales → merge verificado → CI post-merge.
 
+## Prompt 02.3 — Importación, migración y licencia (preparado y verificado en local)
+
+**Origen**: continuación autónoma de la fase (misma instrucción del 2026-10-10), apilado sobre 02.2 en la misma rama.
+
+### Entregado: paquete `@lba/persistence`
+
+- **Canal de importación en 6 etapas** (cada una corta y reporta rutas exactas; funciones puras — el escenario actual jamás se toca): (1) sintaxis JSON (fallo en `(raíz)`); (2) estructura (debe ser objeto); (3) puerta de versiones/migraciones; (4) validación Zod del dominio (tipos/rangos/unidades/IDs duplicados/posiciones no finitas); (5) sin pérdida silenciosa; (6) referencias cruzadas.
+- **Sin pérdida silenciosa (mandato de 02.3 y 02.4)**: comparación entrada→salida tras validar; toda clave presente en la entrada y ausente en la salida validada (la que zod strip habría descartado) se rechaza con su ruta exacta a cualquier profundidad (`world.extra`, `objects[0].customField`, `temperature`). Dirección única: los opcionales ausentes en la entrada no son pérdida.
+- **Referencias cruzadas (mandato del dominio, scenario.ts)**: 8 enlaces tipados (objects.zoneId→zones; agents.homeZoneId→zones; orders.items.recipeId→recipes; taskSteps.requiresEquipmentId→equipment; taskTemplates.dependencies→taskTemplates con existencia; fallbackTaskId→taskTemplates; recipes.components.inventoryItemId→inventory; inventory.locationWorldObjectId→objects) + autodependencia rechazada + detección de ciclos con DFS (reporta la cadena completa `a → b → a`). Los `requiredResourceIds` siguen siendo texto libre por contrato («FASE 06 los tipa») — no se inventan reglas.
+- **Formato exportable determinista**: `exportScenario` produce JSON con indentación 2 y salto final; dos exportaciones son idénticas; `cargar(exportar(s))` devuelve un escenario profundo-igual; re-exportar lo reimportado produce exactamente el mismo texto.
+- **Política de migraciones documentada** (migrations.ts, 6 reglas): solo hacia adelante; pasos puros; un paso que no pueda preservar un dato FALLA (nunca descarta); versiones futuras rechazadas explícitamente; la cadena se declara completa (sin pasos vacíos) y cada paso se prueba antes de publicarse. Estado inicial: cadena VACÍA (la versión 1 es la primera del formato; no existen archivos legítimos más antiguos). `schemaVersion` 0 y 2/5/99 producen mensajes específicos en `schemaVersion`.
+- **Cero dependencias nuevas**: `@lba/persistence` solo depende del workspace `@lba/domain` (ni zod directa: usa `validateScenario` del dominio); herramientas de test existentes; el lockfile añade solo el link.
+
+### Pruebas
+
+- 48 tests en 4 archivos: `json.test.ts` 24 (los 7 fixtures inválidos del dominio alimentados como TEXTO ?raw — preserva literales 1e999 — y la primera ruta coincide con la del dominio; JSON mal formado; no-objeto; versiones futura/antigua; 4 casos de campos desconocidos con rutas; pureza con congelado y escenario actual intacto; 4 de exportación determinista/ida-vuelta/re-exportación idéntica), `loss-check.test.ts` 8, `references.test.ts` 12 (8 enlaces rotos con ruta + autodependencia + ciclo de 2 + dependencia legítima sin issues), `migrations.test.ts` 4.
+- Cobertura del paquete: 84,93% sentencias / 80,43% ramas (por encima de los umbrales 75/70); el código no cubierto es el recorrido de la cadena de migraciones, vacía por diseño (estado inicial documentado).
+
+### Verificación local (2026-10-10, rama `feat/phase-02-modelo-datos-catalogo`, Node v24.21.0) — 9/9 OK
+
+| Paso                     | Resultado | Detalle                                                               |
+| ------------------------ | --------- | --------------------------------------------------------------------- |
+| `npm ci`                 | OK        | lockfile con link de workspace nuevo; 0 vulnerabilidades              |
+| `npm run format:check`   | OK        | Prettier sin diferencias                                              |
+| `npm run lint`           | OK        | 0 errores, 0 avisos                                                   |
+| `npm run typecheck`      | OK        | cuatro workspaces                                                     |
+| `npm test`               | OK        | **267/267** (33 web + 130 domain + 56 asset-catalog + 48 persistence) |
+| `npm run build`          | OK        | build de producción completa                                          |
+| Smoke preview            | OK        | HTTP 200 con `<title>LBA_Restaurant_Engine</title>`                   |
+| `npm run audit:licenses` | OK        | 228 paquetes (sin cambios), todas permitidas                          |
+| `npm run audit:security` | OK        | 0 vulnerabilidades                                                    |
+
+### Estado de publicación
+
+- Mismo flujo pendiente que 02.2 (push/PR/CI/merge cuando exista escritura remota). Sin cambios en THIRD_PARTY_NOTICES de terceros: el paquete no añade código externo.
+
 ## Criterios de salida de la fase (parcial)
 
-| ID  | Criterio (FASE_02)                                 | Estado           | Notas                                                                              |
-| --- | -------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------- |
-| 1   | Schemas con errores comprensibles y ruta de campo  | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad  |
-| 2   | IDs estables                                       | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                |
-| 3   | Catálogo con propiedades/unidades                  | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva |
-| 4   | Importación/migración sin pérdida silenciosa       | PENDIENTE        | Prompt 02.3                                                                        |
-| 5   | Auditoría de salida (ida y vuelta, extensibilidad) | PENDIENTE        | Prompt 02.4                                                                        |
+| ID  | Criterio (FASE_02)                                 | Estado           | Notas                                                                                  |
+| --- | -------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------- |
+| 1   | Schemas con errores comprensibles y ruta de campo  | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad      |
+| 2   | IDs estables                                       | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                    |
+| 3   | Catálogo con propiedades/unidades                  | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva     |
+| 4   | Importación/migración sin pérdida silenciosa       | CUMPLIDO (local) | Prompt 02.3 ejecutado y verificado; pendiente de publicación junto al resto de la rama |
+| 5   | Auditoría de salida (ida y vuelta, extensibilidad) | PENDIENTE        | Prompt 02.4                                                                            |
 
 ## Pendientes de la fase
 
-1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2) cuando la escritura remota esté disponible; flujo de publicación documentado arriba.
-2. Prompts 02.3 (importación/migración) y 02.4 (auditoría de salida) después, en orden.
+1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3) cuando la escritura remota esté disponible; flujo de publicación documentado arriba.
+2. Prompt 02.4 (auditoría de salida) después.
 3. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).
