@@ -279,7 +279,13 @@ La auditoría detectó que **ninguna prueba cruzaba los tres paquetes** (los tes
 
 ### 3. Bloqueo de publicación (punto de parada)
 
-La auditoría local está completa, pero la **publicación no pudo ejecutarse**: el entorno de trabajo no tiene acceso de escritura al remoto (`git push --dry-run` lo confirma; lectura anónima del repo público sí disponible). No se ha forzado nada: sin borrado de datos ni historial, sin ocultar fallos.
+La auditoría local está completa, pero la **publicación no pudo ejecutarse**: el entorno de trabajo no tiene acceso de escritura al remoto (`git push` confirmado dos veces —dry-run y real, exit 128, fallo en la solicitud de credenciales—; lectura anónima del repo público sí disponible). No se ha forzado nada: sin borrado de datos ni historial, sin ocultar fallos.
+
+**Pre-auditoría de publicación ya verificada (lectura anónima, 2026-10-10)**:
+
+- `origin/main` sigue en `97bb93bd289f9635e54316b050588cae7d858733`: **0 commits nuevos** desde el punto de partida de la rama; `main` local y remoto son idénticos.
+- El `merge-base` de la rama con `origin/main` es el propio `97bb93b`: la rama es un **avance puro**, sin posibilidad de conflictos y sin riesgo de sobrescribir trabajo ajeno.
+- Solo existe `main` como rama remota (sin ramas nuevas de terceros; los refs de PR #1–#4 corresponden al historial ya fusionado): no hay PRs abiertos con los que competir.
 
 **Acción necesaria para desbloquear** (queda pendiente del propietario): habilitar el acceso de escritura al repositorio `Lean031110/LBA_Restaurant_Engine` para este entorno de trabajo y notificarlo. En cuanto el acceso exista, el flujo se ejecuta sin cambios: push de `feat/phase-02-modelo-datos-catalogo` → PR con checklist real → Actions sobre el SHA exacto → inspección de jobs/artefactos → merge (squash) → CI post-merge → este informe se actualiza con SHA/URL reales → estado APROBADA → FASE 03.
 
