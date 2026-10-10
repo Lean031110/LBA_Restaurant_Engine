@@ -28,6 +28,10 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 
 - **Sin código de terceros**: importación/exportación de escenarios sobre `@lba/domain` (workspace) y JSON nativo; ni una dependencia externa nueva (el lockfile solo añade el link). Las herramientas de desarrollo (typescript, vitest, coverage-v8) coinciden con las ya verificadas; los fixtures usados por las pruebas son los propios de `scenarios/fixtures`.
 
+## tests/integration (FASE 02, cierre de fase)
+
+- **Sin código de terceros**: pruebas del flujo completo entre los workspaces `@lba/domain`, `@lba/asset-catalog` y `@lba/persistence` (enlaces de workspace, no paquetes externos). Las herramientas de desarrollo (typescript, vitest) coinciden con las ya verificadas; el escenario de prueba se instancia desde los presets del catálogo, sin activos externos.
+
 ## Dependencias directas — desarrollo (apps/web)
 
 | Paquete                   | Versión | Licencia   | URL oficial                                        | Finalidad                      |

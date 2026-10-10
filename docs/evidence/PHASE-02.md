@@ -1,7 +1,7 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida)** preparados y verificados en local sobre la misma rama, **pendientes de publicación** (ver «Bloqueo de seguridad» en `PHASE-01.md`; la rama local ahora se llama `feat/phase-02-modelo-datos-catalogo`, renombrada desde `fix/phase-02-parameter-invariants` para reflejar su contenido acumulado)
-- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4) — fechas verificables por timestamps git
+- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida) + cierre de fase (auditoría de estado real y pruebas de integración del flujo completo en `tests/integration`)** preparados y verificados en local sobre la misma rama, **pendientes de publicación** por bloqueo de acceso de escritura al remoto (ver «Cierre de fase» al final; la rama local es `feat/phase-02-modelo-datos-catalogo`)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4, cierre de fase) — fechas verificables por timestamps git
 - Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4: TODOS ejecutados; falta la publicación/integración)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
@@ -250,5 +250,61 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 ## Pendientes de la fase
 
-1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3 + auditoría 02.4) cuando la escritura remota esté disponible; flujo de publicación documentado arriba. Al fusionar: actualizar este informe con SHA/URL reales → estado APROBADA → habilita FASE 03 (editor 2D; el modelo de datos no es ambiguo, ver 02.4).
+1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3 + auditoría 02.4 + cierre con pruebas de integración) cuando el acceso de escritura al remoto esté disponible; flujo de publicación documentado abajo. Al fusionar: actualizar este informe con SHA/URL reales → estado APROBADA → habilita FASE 03 (editor 2D; el modelo de datos no es ambiguo, ver 02.4).
 2. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).
+
+---
+
+## Cierre de fase (2026-10-10) — auditoría de estado real, pruebas de integración y bloqueo de publicación
+
+**Origen**: instrucción del propietario para el cierre formal de FASE 02: auditar el estado real antes de publicar, ejecutar la auditoría completa, añadir las pruebas de integración que falten, revisar licencias y solo entonces publicar/verificar/fusionar; detenerse en el punto exacto si existe un bloqueo de acceso, sin ocultar fallos ni inventar resultados.
+
+### 1. Auditoría del estado real (antes de publicar)
+
+- **Árbol de trabajo**: limpio (0 sucios) tras restaurar los modos de archivo alterados por el reinicio del entorno (150 entradas del índice; script `scripts/restore_modes.sh`, patrón ya conocido). Sin cambios sin registrar, sin archivos generados inesperados, sin modificaciones de permisos: verificado con `git status --untracked-files=all` (0) y listado de rutas contra el árbol esperado.
+- **Rama frente a `main`**: 5 commits (`2d92c9a` 02.1-b → `9fb17b9` 02.1-c → `ed346ce` 02.2 → `02099bd` 02.3 → `f7ac972` 02.4), 58 archivos, +6466/−56; todos presentes, ordenados y coherentes entre sí (los correctivos preceden a catálogo/persistencia/auditoría).
+- **Contratos entre paquetes**: `@lba/domain` exporta tipos+esquemas+`UNIT_CONSTRAINTS`+validación con rutas; `@lba/asset-catalog` depende de `@lba/domain` 0.1.0 y declara datos reutilizando sus esquemas (auditoría estructural anti-duplicación en `catalog.test.ts`, 10 fuentes auditadas); `@lba/persistence` depende de `@lba/domain` 0.1.0 y consume sus fixtures. Sin dependencias circulares; cero paquetes externos nuevos en todo el cierre (lockfile: solo links de workspace).
+- **No pérdida silenciosa / referencias / ciclos**: cubiertos por `persistence` (6 etapas con rutas exactas, `broken_reference`, DFS de ciclos) y ahora por las pruebas de integración de abajo.
+- **Tabla de presets determinista**: `PRESET_TABLE.md` se genera desde el catálogo y se sincroniza por file snapshot (el test falla si el archivo comprometido no coincide con su fuente).
+- **Defecto detectado y corregido en esta auditoría**: el mapa de módulos (`docs/arquitectura/mapa-modulos.md`) describía un estado desactualizado («Planificado»/«No creado» para módulos ya existentes desde FASE 01/02). Corregido: la tabla ahora describe el estado real por módulo, incluido `tests/integration`, y aclara que `tests/e2e` y `tests/performance` se crearán cuando su fase lo necesite.
+
+### 2. Pruebas de integración del flujo completo (hueco detectado y cubierto)
+
+La auditoría detectó que **ninguna prueba cruzaba los tres paquetes** (los tests de persistencia usaban fixtures del dominio; el catálogo no intervenía en el ciclo export→import). Se creó el workspace `tests/integration` (`@lba/tests-integration`, ubicación prevista por el mapa de módulos; `npm test` lo ejecuta automáticamente vía workspaces; CI sube `tests/*/test-results`):
+
+- **`flow.test.ts` (12 tests)** — escenario válido → validación → consulta de catálogo → exportación → importación → comparación de datos: el escenario se instancia consultando presets reales del catálogo (mesas, silla, puerta, tabique, plancha, nevera; zonas comedor/cocina; entidad Equipment que hereda los ParameterRecord del preset con sus unidades), se valida con el dominio, se exporta con persistencia, se reimporta y se compara **profundamente** (`toEqual`) con el original; la exportación canónica es punto fijo; el override de escenario (240 s dentro del rango declarado 60..1800) y los puntos de interacción trasladados sobreviven al ciclo.
+- **`failure-paths.test.ts` (8 tests)** — escenarios inválidos y migraciones fallidas, todos con la ruta de campo exacta: IDs duplicados (`objects[N].id`), referencia rota de zona (`broken_reference` en `objects[0].zoneId`), ciclo de dependencias (`taskTemplates[0].dependencies` con el ciclo completo en el mensaje), override fuera del rango declarado (`parameters.cleaningSeconds.scenarioOverrideValue`), versión antigua 0 y futura 2 (puerta de migraciones), campo desconocido (`unknown_field`, nunca se descarta) y pureza: ninguna carga fallida daña el escenario actual ni la entrada buena.
+- **Hallazgo documentado del pipeline**: la primera validación normaliza el orden de claves al orden declarado por el esquema (zod reconstruye el objeto); los DATOS son idénticos (la comparación profunda lo prueba), pero la forma textual canónica se alcanza tras una ronda de validación. La prueba de determinismo afirma la propiedad honesta: la exportación canónica es punto fijo. Documentado en `flow.test.ts`.
+- **Configuración**: `tests/integration` ejecuta `vitest run` SIN cobertura (no hay código de producción que proteger; la cobertura vive en cada paquete) pero SÍ genera JUnit para los artefactos de CI.
+
+### 3. Bloqueo de publicación (punto de parada)
+
+La auditoría local está completa, pero la **publicación no pudo ejecutarse**: el entorno de trabajo no tiene acceso de escritura al remoto (`git push --dry-run` lo confirma; lectura anónima del repo público sí disponible). No se ha forzado nada: sin borrado de datos ni historial, sin ocultar fallos.
+
+**Acción necesaria para desbloquear** (queda pendiente del propietario): habilitar el acceso de escritura al repositorio `Lean031110/LBA_Restaurant_Engine` para este entorno de trabajo y notificarlo. En cuanto el acceso exista, el flujo se ejecuta sin cambios: push de `feat/phase-02-modelo-datos-catalogo` → PR con checklist real → Actions sobre el SHA exacto → inspección de jobs/artefactos → merge (squash) → CI post-merge → este informe se actualiza con SHA/URL reales → estado APROBADA → FASE 03.
+
+### 4. Inventario de módulos al cierre (base para FASE 03)
+
+| Módulo                   | Responsabilidad                                                  | API pública (extracto)                                                                                | Pruebas      |
+| ------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------ |
+| `apps/web`               | UI React/Vite, logger y panel de diagnóstico                     | `@lba/web` (app); logger `core/browser/store`                                                         | 33 (FASE 01) |
+| `packages/domain`        | Tipos, IDs, unidades, esquemas, validación con rutas             | 9 entidades + `ScenarioSchema` + `UNIT_CONSTRAINTS` + `validate*` + `formatPath`                      | 130          |
+| `packages/asset-catalog` | Presets declarativos (37 objetos + 11 zonas), iconos, tabla      | `getObjectPreset/getZonePreset/list*` + `CATALOG` + `ICONS` + `renderPresetTable`                     | 60           |
+| `packages/persistence`   | Import 6 etapas, export determinista, migraciones, referencias   | `loadScenarioJson/exportScenario` + `validateReferences` + `MIGRATION_CHAIN` + `collectUnknownFields` | 57           |
+| `tests/integration`      | Flujo completo entre los tres paquetes (válido + rutas de fallo) | (solo pruebas: `buildIntegrationScenario`, `instantiate*`)                                            | 20           |
+
+### 5. Verificación local tras el cierre (2026-10-10) — 9/9 OK
+
+| Paso                     | Resultado | Detalle                                                                                |
+| ------------------------ | --------- | -------------------------------------------------------------------------------------- |
+| `npm ci`                 | OK        | lockfile actualizado (solo link de `tests/integration`); 0 vulnerabilidades            |
+| `npm run format:check`   | OK        | Prettier sin diferencias                                                               |
+| `npm run lint`           | OK        | 0 errores, 0 avisos                                                                    |
+| `npm run typecheck`      | OK        | cinco workspaces (incluido `@lba/tests-integration`)                                   |
+| `npm test`               | OK        | **300/300** (33 web + 130 domain + 60 asset-catalog + 57 persistence + 20 integration) |
+| `npm run build`          | OK        | build de producción completa                                                           |
+| Smoke preview            | OK        | HTTP 200 con `<title>LBA_Restaurant_Engine</title>`                                    |
+| `npm run audit:licenses` | OK        | 228 paquetes, todas permitidas (cero paquetes nuevos en el cierre)                     |
+| `npm run audit:security` | OK        | 0 vulnerabilidades                                                                     |
+
+Los resultados anteriores son **locales**; los resultados confirmados por GitHub Actions sobre el SHA exacto quedan pendientes de la publicación (sección 3). Ningún dato marcado como completado sigue pendiente: la fase permanece `EN CURSO` hasta la integración verificada.

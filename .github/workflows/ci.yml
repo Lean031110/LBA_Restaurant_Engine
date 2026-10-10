@@ -92,6 +92,7 @@ jobs:
             apps/web/coverage/
             packages/*/test-results/
             packages/*/coverage/
+            tests/*/test-results/
             reports/
             ${{ runner.temp }}/smoke.html
           retention-days: 30
