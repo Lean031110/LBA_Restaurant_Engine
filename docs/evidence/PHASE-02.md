@@ -1,8 +1,8 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida) + cierre de fase (auditoría de estado real y pruebas de integración del flujo completo en `tests/integration`)** preparados y verificados en local sobre la misma rama, **pendientes de publicación** por bloqueo de acceso de escritura al remoto (ver «Cierre de fase» al final; la rama local es `feat/phase-02-modelo-datos-catalogo`)
-- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4, cierre de fase) — fechas verificables por timestamps git
-- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4: TODOS ejecutados; falta la publicación/integración)
+- Estado: `APROBADA` — prompt 02.1 integrado (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida) + cierre de fase (pruebas de integración en `tests/integration`) integrados vía PR #5**: squash en `main` `046bd280126c0b8c263eef93a9a5cba81a9d558d` (2026-10-10), Actions verificados **job a job** sobre el SHA exacto `bb05f6d31f514f5fffdaea1bc415ef7f6e34a291`, artefactos de evidencia inspeccionados (JUnit 300/300, cobertura, licencias, seguridad) y CI post-merge en verde (ver «Registro post-integración» al final)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4, cierre de fase, publicación e integración) — fechas verificables por timestamps git
+- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4: TODOS ejecutados, publicados e integrados)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
 
@@ -58,8 +58,8 @@
 ### Estado de publicación
 
 - La rama `fix/phase-02-parameter-invariants` está creada desde `main` (`97bb93bd`) con los cambios anteriores.
-- **No se ha hecho push ni se ha abierto PR**: las escrituras remotas están suspendidas hasta que el propietario revoque el token antiguo y configure la credencial nueva (instrucción del 2026-10-09; registro del incidente en `PHASE-01.md`).
-- Flujo pendiente cuando la credencial esté lista: push → PR → revisión del diff → Actions sobre el SHA exacto → inspección de pasos/tests/artefactos → confirmación de ausencia de conflictos → actualización de este informe con SHA/URLs/artefactos reales → merge autónomo (si todo verifica) → verificación del CI post-merge.
+- Publicación suspendida en su momento hasta la renovación de la credencial (instrucción del 2026-10-09; registro del incidente en `PHASE-01.md`).
+- **Integrado con el resto de la fase vía PR #5** (squash en `main` `046bd28`, 2026-10-10) — el flujo pendiente descrito entonces se ejecutó sin cambios; ver «Registro post-integración».
 
 ## Revisión de diseño 02.1-c — Dos detalles del propietario + corrección de fechas
 
@@ -113,7 +113,7 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 **Estado de publicación**: sin cambios — SIN push, SIN PR, SIN merge hasta que el propietario revoque la credencial antigua, configure la nueva y lo confirme explícitamente.
 
-## Prompt 02.2 — Catálogo/presets (preparado y verificado en local)
+## Prompt 02.2 — Catálogo/presets (integrado vía PR #5)
 
 **Origen**: instrucción del propietario (2026-10-10): continuar la fase sin su intervención, con verificación completa por iteración. El prompt 02.2 se ejecutó apilado sobre la correctiva (misma rama) porque depende de `UNIT_CONSTRAINTS` y `VerifiedAtSchema` introducidos en 02.1-b/c.
 
@@ -153,10 +153,9 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 ### Estado de publicación
 
-- Commit sobre la rama `feat/phase-02-modelo-datos-catalogo` (apilado tras 02.1-c). SIN push, SIN PR, SIN merge (misma política que la correctiva).
-- Al publicar: push → PR (cuerpo con checklist real) → Actions sobre el SHA exacto → artefactos escaneados → `PHASE-02.md` actualizado con SHA/URLs reales → merge verificado → CI post-merge.
+- Commit sobre la rama `feat/phase-02-modelo-datos-catalogo` (apilado tras 02.1-c). **Integrado vía PR #5** (squash en `main` `046bd28`, 2026-10-10): push → PR con checklist real → Actions sobre el SHA exacto `bb05f6d` → artefactos inspeccionados → merge → CI post-merge. Ver «Registro post-integración».
 
-## Prompt 02.3 — Importación, migración y licencia (preparado y verificado en local)
+## Prompt 02.3 — Importación, migración y licencia (integrado vía PR #5)
 
 **Origen**: continuación autónoma de la fase (misma instrucción del 2026-10-10), apilado sobre 02.2 en la misma rama.
 
@@ -190,9 +189,9 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 ### Estado de publicación
 
-- Mismo flujo pendiente que 02.2 (push/PR/CI/merge cuando exista escritura remota). Sin cambios en THIRD_PARTY_NOTICES de terceros: el paquete no añade código externo.
+- **Integrado vía PR #5** (squash en `main` `046bd28`, 2026-10-10), junto al resto de la rama. Sin cambios en THIRD_PARTY_NOTICES de terceros: el paquete no añade código externo. Ver «Registro post-integración».
 
-## Prompt 02.4 — Auditoría de salida (preparado y verificado en local)
+## Prompt 02.4 — Auditoría de salida (integrado vía PR #5)
 
 **Origen**: cierre del paquete de prompts de FASE 02 (misma continuación autónoma). Este prompt audita lo producido por 02.1–02.3 y produce la tabla de presets.
 
@@ -234,28 +233,28 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 ### Estado de publicación
 
-- Mismo flujo pendiente que 02.2 y 02.3. La fase NO se considera APROBADA hasta publicar la rama completa, verificar Actions sobre el SHA exacto, escanear artefactos y fusionar; entonces este informe se actualizará con SHA/URL reales y el estado pasará a APROBADA, habilitando FASE 03 (editor 2D).
+- **Integrado vía PR #5** (squash en `main` `046bd28`, 2026-10-10). La fase pasó a **APROBADA** tras publicar la rama completa, verificar Actions sobre el SHA exacto, inspeccionar artefactos y fusionar — este informe queda actualizado con SHA/URL reales en «Registro post-integración», habilitando FASE 03 (editor 2D).
 
-## Criterios de salida de la fase (parcial)
+## Criterios de salida de la fase
 
-| ID  | Criterio (FASE_02)                                           | Estado           | Notas                                                                                  |
-| --- | ------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------- |
-| 1   | Schemas con errores comprensibles y ruta de campo            | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad      |
-| 2   | IDs estables                                                 | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                    |
-| 3   | Catálogo con propiedades/unidades                            | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva     |
-| 4   | Importación/migración sin pérdida silenciosa                 | CUMPLIDO (local) | Prompt 02.3 ejecutado y verificado; pendiente de publicación junto al resto de la rama |
-| 5   | Auditoría de salida (ida y vuelta, extensibilidad)           | CUMPLIDO (local) | Prompt 02.4 ejecutado y verificado (round-trip, canal de extensión, tabla de presets)  |
-| —   | Fixtures negativos (corrupción/límites/duplicados/versión)   | CUMPLIDO (local) | 7 de escenario (02.1) + 9 de preset (02.2), todos con ruta exacta                      |
-| —   | Inventario de licencias actualizado; sin asset no verificado | CUMPLIDO (local) | 228 paquetes; cero paquetes nuevos en 02.2–02.4; iconos obra original del proyecto     |
+| ID  | Criterio (FASE_02)                                           | Estado   | Notas                                                                                 |
+| --- | ------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------- |
+| 1   | Schemas con errores comprensibles y ruta de campo            | CUMPLIDO | Invariantes por unidad + override validado; mensajes con explicación de la unidad     |
+| 2   | IDs estables                                                 | CUMPLIDO | Sin cambios en esta iteración (ya cubierto en 02.1)                                   |
+| 3   | Catálogo con propiedades/unidades                            | CUMPLIDO | Prompt 02.2 ejecutado, verificado e integrado (PR #5)                                 |
+| 4   | Importación/migración sin pérdida silenciosa                 | CUMPLIDO | Prompt 02.3 ejecutado, verificado e integrado (PR #5)                                 |
+| 5   | Auditoría de salida (ida y vuelta, extensibilidad)           | CUMPLIDO | Prompt 02.4 ejecutado, verificado e integrado (round-trip, canal de extensión, tabla) |
+| —   | Fixtures negativos (corrupción/límites/duplicados/versión)   | CUMPLIDO | 7 de escenario (02.1) + 9 de preset (02.2), todos con ruta exacta                     |
+| —   | Inventario de licencias actualizado; sin asset no verificado | CUMPLIDO | 228 paquetes; cero paquetes nuevos en 02.2–02.4; iconos obra original del proyecto    |
 
 ## Pendientes de la fase
 
-1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3 + auditoría 02.4 + cierre con pruebas de integración) cuando el acceso de escritura al remoto esté disponible; flujo de publicación documentado abajo. Al fusionar: actualizar este informe con SHA/URL reales → estado APROBADA → habilita FASE 03 (editor 2D; el modelo de datos no es ambiguo, ver 02.4).
-2. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).
+1. ~~Publicar e integrar la rama completa~~ — **COMPLETADO (2026-10-10)**: PR #5 fusionado (squash `046bd28`), Actions verificados job a job sobre el SHA exacto y artefactos inspeccionados (ver «Registro post-integración»). El estado pasó a APROBADA y FASE 03 queda habilitada tras la revisión del propietario.
+2. Revocación del token antiguo del incidente de seguridad confirmada por el propietario y fecha registrada en `PHASE-01.md` (la credencial en uso fue renovada el 2026-10-10; el registro histórico se conserva).
 
 ---
 
-## Cierre de fase (2026-10-10) — auditoría de estado real, pruebas de integración y bloqueo de publicación
+## Cierre de fase (2026-10-10) — auditoría de estado real, pruebas de integración y publicación
 
 **Origen**: instrucción del propietario para el cierre formal de FASE 02: auditar el estado real antes de publicar, ejecutar la auditoría completa, añadir las pruebas de integración que falten, revisar licencias y solo entonces publicar/verificar/fusionar; detenerse en el punto exacto si existe un bloqueo de acceso, sin ocultar fallos ni inventar resultados.
 
@@ -277,7 +276,9 @@ La auditoría detectó que **ninguna prueba cruzaba los tres paquetes** (los tes
 - **Hallazgo documentado del pipeline**: la primera validación normaliza el orden de claves al orden declarado por el esquema (zod reconstruye el objeto); los DATOS son idénticos (la comparación profunda lo prueba), pero la forma textual canónica se alcanza tras una ronda de validación. La prueba de determinismo afirma la propiedad honesta: la exportación canónica es punto fijo. Documentado en `flow.test.ts`.
 - **Configuración**: `tests/integration` ejecuta `vitest run` SIN cobertura (no hay código de producción que proteger; la cobertura vive en cada paquete) pero SÍ genera JUnit para los artefactos de CI.
 
-### 3. Bloqueo de publicación (punto de parada)
+### 3. Bloqueo de publicación (punto de parada) — RESUELTO
+
+> **RESUELTO (2026-10-10, más tarde el mismo día)**: el acceso de escritura al remoto quedó disponible y la publicación se ejecutó a continuación **sin cambios en el flujo** (ver «Registro post-integración»). Esta sección se conserva íntegra como registro del punto de parada en el momento del cierre, conforme a la instrucción de detenerse exactamente en el bloqueo sin forzar nada.
 
 La auditoría local está completa, pero la **publicación no pudo ejecutarse**: el entorno de trabajo no tiene acceso de escritura al remoto (`git push` confirmado dos veces —dry-run y real, exit 128, fallo en la solicitud de credenciales—; lectura anónima del repo público sí disponible). No se ha forzado nada: sin borrado de datos ni historial, sin ocultar fallos.
 
@@ -313,4 +314,60 @@ La auditoría local está completa, pero la **publicación no pudo ejecutarse**:
 | `npm run audit:licenses` | OK        | 228 paquetes, todas permitidas (cero paquetes nuevos en el cierre)                     |
 | `npm run audit:security` | OK        | 0 vulnerabilidades                                                                     |
 
-Los resultados anteriores son **locales**; los resultados confirmados por GitHub Actions sobre el SHA exacto quedan pendientes de la publicación (sección 3). Ningún dato marcado como completado sigue pendiente: la fase permanece `EN CURSO` hasta la integración verificada.
+Los resultados anteriores son **locales** y quedaron confirmados por GitHub Actions sobre el SHA exacto en el «Registro post-integración» de abajo (sin divergencias: ninguna corrección fue necesaria tras el push). La fase pasó de `EN CURSO` a **`APROBADA`** con la integración verificada.
+
+---
+
+## Registro post-integración (2026-10-10) — publicación, verificación en Actions y merge
+
+**Origen**: acceso de escritura al remoto disponible de nuevo (credencial renovada por el propietario el 2026-10-10). El flujo de publicación documentado en la sección 3 se ejecutó **sin cambios**.
+
+### Pre-publicación (re-verificada con acceso autenticado)
+
+- `origin/main` = `97bb93bd289f9635e54316b050588cae7d858733`: **0 commits nuevos** desde el punto de partida de la rama; `merge-base` idéntico → avance puro, sin conflictos posibles, sin trabajo ajeno sobrescrito. Solo `main` como rama remota; PRs #1–#4 fusionados, sin PRs abiertos.
+- Rama publicada en su SHA final `bb05f6d31f514f5fffdaea1bc415ef7f6e34a291` (7 commits: `2d92c9a` → `9fb17b9` → `ed346ce` → `02099bd` → `f7ac972` → `cf54541` → `bb05f6d`; 67 archivos, +7382/−64). Diff remoto ↔ local comparado: **sin diferencias**.
+
+### PR #5
+
+- URL: https://github.com/Lean031110/LBA_Restaurant_Engine/pull/5
+- Cuerpo con cambios por commit, contratos entre paquetes, verificación local (9/9, 300/300), riesgos y checklist de aceptación.
+- Estado final antes del merge: `mergeable: true`, `mergeable_state: clean`.
+
+### Actions sobre el SHA exacto (verificados job a job, no solo el indicador verde)
+
+| Run                                                                                         | Evento                              | SHA evaluado                             | Resultado                        |
+| ------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------- | -------------------------------- |
+| [38048928343](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38048928343) | push (rama)                         | `bb05f6d…` (head de rama)                | success                          |
+| [38048962530](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38048962530) | pull_request (merge ref `16dbbfd…`) | resultado de fusionar el head con `main` | success — job «Calidad» completo |
+| [38049228420](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38049228420) | push (main, post-merge)             | `046bd28…`                               | success — job «Calidad» completo |
+
+- Job «Calidad (formato, lint, tipos, tests, build, auditorías)» — pasos verificados individualmente (17/17): npm ci (240 añadidos / 246 auditados) → Prettier → ESLint → Typecheck → Tests con cobertura (JUnit) → Build de producción → Smoke (HTTP 200 con `<title>LBA_Restaurant_Engine</title>` y `id="root"`) → Auditoría de licencias → `npm audit --audit-level=high` → subida de evidencias y build. Ningún paso fallido ni omitido.
+
+### Artefactos de evidencia (descargados e inspeccionados)
+
+| Artefacto                                                                           | Run                | Contenido verificado                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `lba-ci-evidence-16dbbfd…` (id 11668284200)                                         | 38048962530 (PR)   | JUnit por workspace: 33 (web) + 60 (asset-catalog) + 130 (domain) + 57 (persistence) + 20 (integration) = **300/300, 0 fallos, 0 errores**; `coverage-summary.json` por paquete; `license-report.json/md` (228 paquetes, todas permitidas) |
+| `lba-build-16dbbfd…` (id 11668019576)                                               | 38048962530 (PR)   | build de producción servida por el smoke test                                                                                                                                                                                              |
+| `lba-ci-evidence-bb05f6d…` (id 11667999513) + `lba-build-bb05f6d…` (id 11667949538) | 38048928343 (push) | mismos contenidos sobre el head de rama                                                                                                                                                                                                    |
+
+- Cobertura confirmada en los artefactos (statements/branches): domain **100/98.9** · asset-catalog **100/97.61** · persistence **84.93/80.43** · web **94.11/88.52**.
+- Logs del job inspeccionados directamente: `found 0 vulnerabilities` (npm ci y `npm audit`), «Smoke OK: la build sirve la página base.», 228 licencias OK, conteos de pruebas coincidentes con el JUnit.
+
+### Merge y verificación post-merge
+
+- **Squash merge** del PR #5 (política del repositorio) → `main` en `046bd280126c0b8c263eef93a9a5cba81a9d558d`, con mensaje que referencia prompts, run y resultados.
+- PR #5: `closed` / `merged: true`. Rama remota `feat/phase-02-modelo-datos-catalogo` **eliminada automáticamente** tras el merge (política del repositorio); solo `main` permanece como rama remota.
+- CI post-merge sobre `main` (`046bd28`): run 38049228420 — **completed/success**, todos los pasos verificados, ninguno fallido.
+- `main` local sincronizado con el remoto (fast-forward a `046bd28`); la rama local queda como respaldo histórico.
+
+### Conflictos, defectos y riesgos
+
+- **Conflictos**: ninguno (avance puro sobre `main`; merge-base = base del PR).
+- **Defectos detectados/corregidos durante la publicación**: ninguno nuevo — el único defecto del cierre (mapa de módulos desactualizado) ya estaba corregido en `cf54541` antes del push; Actions no reportó ninguna divergencia frente a la verificación local.
+- **Riesgos remanentes**: `requiredResourceIds` como texto libre (decisión de contrato documentada; FASE 06 lo tipa); confirmación pendiente del propietario sobre la revocación del token antiguo del incidente de seguridad (ver `PHASE-01.md`).
+
+### Resultado de la fase
+
+- **Estado: `APROBADA`** — publicada + Actions verificados job a job sobre el SHA exacto + artefactos inspeccionados + merge + CI post-merge en verde. Los resultados «locales» de las secciones anteriores quedan confirmados por GitHub.
+- **FASE 03 (editor 2D) queda habilitada** a partir de este registro, pendiente de la revisión del propietario al cierre de FASE 02. No se inicia en esta iteración (instrucción explícita de parar antes).
