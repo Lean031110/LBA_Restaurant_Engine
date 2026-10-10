@@ -6,3 +6,6 @@ package-lock.json
 docs/guia/
 LICENSE
 *.min.*
+# Tabla de presets: archivo GENERADO por renderPresetTable() y sincronizado
+# por test (file snapshot); su formato lo dicta el generador, no Prettier.
+packages/asset-catalog/PRESET_TABLE.md

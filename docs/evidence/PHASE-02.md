@@ -1,8 +1,8 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **iteración correctiva 02.1-b + revisión de diseño 02.1-c + prompt 02.2 (catálogo)** preparadas y verificadas en local sobre la misma rama, **pendientes de publicación** (ver «Bloqueo de seguridad» en `PHASE-01.md`; la rama local ahora se llama `feat/phase-02-modelo-datos-catalogo`, renombrada desde `fix/phase-02-parameter-invariants` para reflejar su contenido acumulado)
-- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2) — fechas verificables por timestamps git
-- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4; ejecutados 02.1 + correctivas + 02.2)
+- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida)** preparados y verificados en local sobre la misma rama, **pendientes de publicación** (ver «Bloqueo de seguridad» en `PHASE-01.md`; la rama local ahora se llama `feat/phase-02-modelo-datos-catalogo`, renombrada desde `fix/phase-02-parameter-invariants` para reflejar su contenido acumulado)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4) — fechas verificables por timestamps git
+- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4: TODOS ejecutados; falta la publicación/integración)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
 
@@ -192,18 +192,63 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 - Mismo flujo pendiente que 02.2 (push/PR/CI/merge cuando exista escritura remota). Sin cambios en THIRD_PARTY_NOTICES de terceros: el paquete no añade código externo.
 
+## Prompt 02.4 — Auditoría de salida (preparado y verificado en local)
+
+**Origen**: cierre del paquete de prompts de FASE 02 (misma continuación autónoma). Este prompt audita lo producido por 02.1–02.3 y produce la tabla de presets.
+
+### Entregado
+
+- **`packages/persistence/src/round-trip.test.ts` (9 tests)**: ida y vuelta profunda de ambos fixtures válidos (cargar → exportar → cargar = igualdad profunda); preservación por contrato de `WorldObject.properties` (el canal de extensión sancionado de v1: `{ sillas: 4 }`, `{ sentido: 'doble' }` intactos), `Scenario.parameters` con override (`demanda-por-hora` exacto, incl. `scenarioOverrideValue: 22`), opcionales (`description`, `name`, `material`, `color`, `capacity`), huellas poligonales punto a punto, semilla y geometría del mundo; y el contrato de extensibilidad: `properties` acepta primitivos validados y sobrevive a la exportación, mientras que los campos desconocidos FUERA del canal (`experimental`) se rechazan con `no se descarta en silencio`.
+- **Tabla de presets (`packages/asset-catalog/PRESET_TABLE.md`)**: generada por `renderPresetTable()` desde el catálogo (única fuente de verdad) y sincronizada por test con un file snapshot (`toMatchFileSnapshot`) — si el catálogo cambia sin regenerar la tabla, el CI falla; regeneración con `npx vitest run -u`. Contiene las 37 filas de objetos (ID, grupo, etiqueta, huella, altura, material por defecto, parámetros con desglose por unidad, flags) y las 11 de zonas (categoría, tamaño sugerido, capacidad, roles). Excluida de Prettier (`.prettierignore`) porque su formato lo dicta el generador.
+- **`packages/asset-catalog/src/table.test.ts` (4 tests)**: sincronización con el archivo comprometido, cobertura de todos los IDs, recuentos por sección y determinismo del render.
+
+### Pruebas mínimas requeridas por la fase (matriz de cumplimiento)
+
+| Requisito (FASE_02)                                        | Estado   | Dónde                                                                                   |
+| ---------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| Round-trip JSON con comparaciones profundas                | CUMPLIDO | `persistence/json.test.ts` + `round-trip.test.ts` (fixtures + exportación)              |
+| Tabla de rangos deterministas (equivalente property-based) | CUMPLIDO | `domain/parameter.test.ts` 46 (bordes de unidades por campo; fechas dinámicas estables) |
+| Validación de cada tipo de objeto del catálogo             | CUMPLIDO | `asset-catalog/catalog.test.ts` (48 presets re-parseados + propiedades obligatorias)    |
+| Migración/versión y no mutación al fallar una carga        | CUMPLIDO | `persistence/migrations.test.ts` + `json.test.ts` (pureza: entrada congelada, intacto)  |
+
+### Extensibilidad — contrato explícito de v1 (decisión de cierre)
+
+- **Canal sancionado para propiedades avanzadas**: `WorldObject.properties` (primitivos validados: número finito, cadena no vacía, booleano) — llegan validados al escenario y sobreviven a la exportación.
+- **Campos desconocidos**: rechazados con ruta exacta a cualquier profundidad (comparación entrada→salida); jamás se descartan en silencio.
+- **Versiones**: puerta de migraciones (solo hacia adelante, cadena completa y probada; hoy vacía porque v1 es la primera).
+- **Conclusión exigida por el prompt**: el modelo de datos NO es ambiguo — la extensión tiene un único canal definido y verificado, por lo que el editor 2D (FASE 03) puede comenzar cuando esta fase esté APROBADA (es decir, publicada, verificada por Actions en el SHA exacto y fusionada).
+
+### Verificación local (2026-10-10, rama `feat/phase-02-modelo-datos-catalogo`, Node v24.21.0) — 9/9 OK
+
+| Paso                     | Resultado | Detalle                                                               |
+| ------------------------ | --------- | --------------------------------------------------------------------- |
+| `npm ci`                 | OK        | 0 vulnerabilidades                                                    |
+| `npm run format:check`   | OK        | Prettier sin diferencias (tabla generada excluida por diseño)         |
+| `npm run lint`           | OK        | 0 errores, 0 avisos                                                   |
+| `npm run typecheck`      | OK        | cuatro workspaces                                                     |
+| `npm test`               | OK        | **280/280** (33 web + 130 domain + 60 asset-catalog + 57 persistence) |
+| `npm run build`          | OK        | build de producción completa                                          |
+| Smoke preview            | OK        | HTTP 200 con `<title>LBA_Restaurant_Engine</title>`                   |
+| `npm run audit:licenses` | OK        | 228 paquetes, todas permitidas                                        |
+| `npm run audit:security` | OK        | 0 vulnerabilidades                                                    |
+
+### Estado de publicación
+
+- Mismo flujo pendiente que 02.2 y 02.3. La fase NO se considera APROBADA hasta publicar la rama completa, verificar Actions sobre el SHA exacto, escanear artefactos y fusionar; entonces este informe se actualizará con SHA/URL reales y el estado pasará a APROBADA, habilitando FASE 03 (editor 2D).
+
 ## Criterios de salida de la fase (parcial)
 
-| ID  | Criterio (FASE_02)                                 | Estado           | Notas                                                                                  |
-| --- | -------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------- |
-| 1   | Schemas con errores comprensibles y ruta de campo  | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad      |
-| 2   | IDs estables                                       | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                    |
-| 3   | Catálogo con propiedades/unidades                  | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva     |
-| 4   | Importación/migración sin pérdida silenciosa       | CUMPLIDO (local) | Prompt 02.3 ejecutado y verificado; pendiente de publicación junto al resto de la rama |
-| 5   | Auditoría de salida (ida y vuelta, extensibilidad) | PENDIENTE        | Prompt 02.4                                                                            |
+| ID  | Criterio (FASE_02)                                           | Estado           | Notas                                                                                  |
+| --- | ------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------- |
+| 1   | Schemas con errores comprensibles y ruta de campo            | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad      |
+| 2   | IDs estables                                                 | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                    |
+| 3   | Catálogo con propiedades/unidades                            | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva     |
+| 4   | Importación/migración sin pérdida silenciosa                 | CUMPLIDO (local) | Prompt 02.3 ejecutado y verificado; pendiente de publicación junto al resto de la rama |
+| 5   | Auditoría de salida (ida y vuelta, extensibilidad)           | CUMPLIDO (local) | Prompt 02.4 ejecutado y verificado (round-trip, canal de extensión, tabla de presets)  |
+| —   | Fixtures negativos (corrupción/límites/duplicados/versión)   | CUMPLIDO (local) | 7 de escenario (02.1) + 9 de preset (02.2), todos con ruta exacta                      |
+| —   | Inventario de licencias actualizado; sin asset no verificado | CUMPLIDO (local) | 228 paquetes; cero paquetes nuevos en 02.2–02.4; iconos obra original del proyecto     |
 
 ## Pendientes de la fase
 
-1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3) cuando la escritura remota esté disponible; flujo de publicación documentado arriba.
-2. Prompt 02.4 (auditoría de salida) después.
-3. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).
+1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2 + persistencia 02.3 + auditoría 02.4) cuando la escritura remota esté disponible; flujo de publicación documentado arriba. Al fusionar: actualizar este informe con SHA/URL reales → estado APROBADA → habilita FASE 03 (editor 2D; el modelo de datos no es ambiguo, ver 02.4).
+2. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).

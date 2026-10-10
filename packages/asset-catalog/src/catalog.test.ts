@@ -294,8 +294,8 @@ describe('auditoría estructural: el catálogo no re-implementa reglas', () => {
   const sourceEntries = Object.entries(rawSources).filter(([file]) => !file.endsWith('.test.ts'))
 
   it('se auditaron todas las fuentes no-test del paquete', () => {
-    // preset, icons, catalog, lookup, index (5) + 4 de data = 9.
-    expect(sourceEntries.length).toBe(9)
+    // preset, icons, catalog, lookup, index, table (6) + 4 de data = 10.
+    expect(sourceEntries.length).toBe(10)
     expect(Object.keys(rawSources).some((f) => f.endsWith('.test.ts'))).toBe(true)
   })
 
