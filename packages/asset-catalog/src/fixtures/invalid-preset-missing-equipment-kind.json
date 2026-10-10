@@ -1,0 +1,18 @@
+{
+  "id": "cat_fixture-griddle-120",
+  "group": "griddle",
+  "label": "Plancha fixture",
+  "description": "Preset de prueba con family equipment pero sin equipmentKind.",
+  "family": "equipment",
+  "layer": "equipment",
+  "tags": ["prueba"],
+  "dimensions": { "width": 1.2, "depth": 0.7 },
+  "heightM": 0.95,
+  "interactionPoint": { "x": 0, "y": 0.8 },
+  "materials": [{ "id": "inox", "label": "Inoxidable", "suggestedColor": "#c9ced6" }],
+  "defaultMaterialId": "inox",
+  "parameters": {},
+  "flags": {},
+  "iconId": "griddle",
+  "usageNotes": ["Nota de prueba."]
+}

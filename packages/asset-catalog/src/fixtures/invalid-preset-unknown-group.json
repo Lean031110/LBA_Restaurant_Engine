@@ -1,0 +1,18 @@
+{
+  "id": "cat_fixture-elevator",
+  "group": "elevator",
+  "label": "Ascensor fixture",
+  "description": "Preset de prueba con grupo fuera del catálogo (elevator).",
+  "family": "furniture",
+  "layer": "furniture",
+  "tags": ["prueba"],
+  "dimensions": { "width": 1.4, "depth": 1.4 },
+  "heightM": 2.2,
+  "interactionPoint": { "x": 0, "y": 1.4 },
+  "materials": [{ "id": "inox", "label": "Inoxidable", "suggestedColor": "#c9ced6" }],
+  "defaultMaterialId": "inox",
+  "parameters": {},
+  "flags": {},
+  "iconId": "counter",
+  "usageNotes": ["Nota de prueba."]
+}

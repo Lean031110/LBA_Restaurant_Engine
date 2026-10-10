@@ -1,8 +1,8 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **iteración correctiva 02.1-b + revisión de diseño 02.1-c** preparadas y verificadas en local, **pendientes de publicación** hasta que el propietario rote la credencial de GitHub (ver «Bloqueo de seguridad» en `PHASE-01.md`)
-- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b y revisión de diseño 02.1-c — fechas verificables por timestamps git)
-- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4; solo 02.1 ejecutado + correctiva)
+- Estado: `EN CURSO` — prompt 02.1 **integrado** (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **iteración correctiva 02.1-b + revisión de diseño 02.1-c + prompt 02.2 (catálogo)** preparadas y verificadas en local sobre la misma rama, **pendientes de publicación** (ver «Bloqueo de seguridad» en `PHASE-01.md`; la rama local ahora se llama `feat/phase-02-modelo-datos-catalogo`, renombrada desde `fix/phase-02-parameter-invariants` para reflejar su contenido acumulado)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2) — fechas verificables por timestamps git
+- Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4; ejecutados 02.1 + correctivas + 02.2)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
 
@@ -113,19 +113,61 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 **Estado de publicación**: sin cambios — SIN push, SIN PR, SIN merge hasta que el propietario revoque la credencial antigua, configure la nueva y lo confirme explícitamente.
 
+## Prompt 02.2 — Catálogo/presets (preparado y verificado en local)
+
+**Origen**: instrucción del propietario (2026-10-10): continuar la fase sin su intervención, con verificación completa por iteración. El prompt 02.2 se ejecutó apilado sobre la correctiva (misma rama) porque depende de `UNIT_CONSTRAINTS` y `VerifiedAtSchema` introducidos en 02.1-b/c.
+
+### Entregado: paquete `@lba/asset-catalog`
+
+- **48 presets**: 37 de objeto (11 estructurales: 3 paredes + 6 puertas madera/metal/cristal con tamaños 90/70/140/180 y mecanismos swing/sliding + 2 ventanas; 14 de mobiliario: 5 mesas + 2 sillas + 2 mostradores + barra + 3 estaciones + pila de bandejas; 12 de equipo, uno por cada `EquipmentKind` del dominio: 12/12) y 11 de zona (uno por cada `ZoneCategory`: 11/11).
+- Cada preset declara: dimensiones en metros de mundo, `heightM`, huella poligonal opcional (mostrador curvo con chaflán), punto de interacción, materiales sugeridos con color `#RRGGBB` y material por defecto, propiedades numéricas como `ParameterRecord` del dominio (regla 10 completa: unidad + rango + procedencia + confianza + override), flags booleanos, icono vectorial y `usageNotes` (qué NO representan los valores — docs/guia/02).
+- **Zonas**: `suggestedSize`, `defaultCapacity` (persons, editable), `allowedRoles` y `accessRules` ≥ 1.
+- **Iconos**: 22 trazados SVG originales del proyecto (viewBox 0 0 24 24), sin descargas ni assets de terceros (prompt 02.2: «iconos vectoriales simples sirven para los placeholders»).
+- **Cero paquetes nuevos**: `@lba/asset-catalog` reutiliza `zod@4.6.5` (ya directa de `@lba/domain`) y las herramientas de test existentes; el diff del lockfile es solo el link del workspace. Terceros: ninguno nuevo (THIRD_PARTY_NOTICES.md actualizado con la nota del paquete y la originalidad de los iconos).
+
+### Cumplimiento del mandato «datos, no reglas» (decisión 02.1-c)
+
+- Las propiedades numéricas EMBEBEN `ParameterRecordSchema` del dominio (`CatalogParameterSpec.record`): toda la semántica de unidades, rangos y overrides se valida una sola vez, en el dominio. El catálogo no tiene ninguna tabla de cotas propia.
+- Pruebas de anti-contradicción: los rangos declarados se cruzan contra `UNIT_CONSTRAINTS` (ningún `minValue`/`maxValue` puede contradecir su unidad); fixture `invalid-preset-bad-range.json` (% con `maxValue` 200 → rutas `value` y `maxValue`).
+- Auditoría estructural: test que lee el código fuente del paquete (vía `import.meta.glob ?raw` de vitest, sin `node:fs`) y falla si aparece una declaración local tipo `*CONSTRAINTS/*LIMITS/*RANGES/*BOUNDS* =` o un re-validador de unidad; test complementario exige que `preset.ts` importe `ParameterRecordSchema` de `@lba/domain`.
+- Convención documentada: origen del preset = centro geométrico; punto de interacción a 0,45 m de la cara frontal (anillo máximo 0,5 m, `INTERACTION_POINT_MAX_OFFSET_M`); pasivas (paredes/ventanas) usan el centro. Unificación de nomenclatura: `heatRecoverySeconds` también en el horno de pizza (la guía usaba `recoverySeconds`; el dominio ya usa `heatRecoverySeconds` en `EquipmentSchema`) — documentada en el test de propiedades obligatorias.
+
+### Pruebas
+
+- 56 tests nuevos en 5 archivos (`preset.test.ts` 18, `catalog.test.ts` 14, `icons.test.ts` 4, `lookup.test.ts` 12, `fixtures.test.ts` 10): re-parse de los 48 presets contra los esquemas, cobertura 21/21 grupos + 12/12 equipos + 11/11 categorías, unicidad de IDs (con rechazo de duplicados en `buildCatalog`), honestidad de estimaciones (todo `estimated`/`low`/supuestos/fecha), coherencia `length` de pared = `dimensions.width`, anillo de interacción, huella poligonal dentro de `dimensions`, propiedades obligatorias por grupo (docs/guia/02), y 9 fixtures inválidos con ruta de campo exacta (ID sin prefijo, rango de `%` contradictorio, `verifiedAt` futuro, dimensión negativa, dimensión Infinity (1e999), punto de interacción a 5 m, `family "equipment"` sin `equipmentKind`, grupo desconocido, zona sin reglas de acceso).
+- Nota zod 4: `z.number()` rechaza `Infinity` a nivel de tipo (mensaje "received Infinity"), igual que en el dominio; el refine de finitud sigue para NaN y el de positividad para negativos.
+
+### Verificación local (2026-10-10, rama `feat/phase-02-modelo-datos-catalogo`, Node v24.21.0) — 9/9 OK
+
+| Paso                     | Resultado real | Detalle                                                                                                                                                        |
+| ------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm ci`                 | OK             | lockfile actualizado (solo link del workspace nuevo); 0 vulnerabilidades                                                                                       |
+| `npm run format:check`   | OK             | Prettier sin diferencias                                                                                                                                       |
+| `npm run lint`           | OK             | 0 errores, 0 avisos (eslint 10 flat sobre el paquete nuevo incluido)                                                                                           |
+| `npm run typecheck`      | OK             | `tsc --noEmit` en los tres workspaces                                                                                                                          |
+| `npm test`               | OK             | **219/219** (33 web + 130 domain + 56 asset-catalog); asset-catalog: 100% en las cuatro métricas; domain: 100/98,90/100/100; web: 96,07% líneas / 88,52% ramas |
+| `npm run build`          | OK             | build de producción (el paquete nuevo es fuente pura; no añade paso de build)                                                                                  |
+| Smoke preview            | OK             | HTTP 200 con `<title>LBA_Restaurant_Engine</title>`                                                                                                            |
+| `npm run audit:licenses` | OK             | 228 paquetes (sin cambios: el link de workspace no añade paquetes auditables), todas permitidas                                                                |
+| `npm run audit:security` | OK             | 0 vulnerabilidades                                                                                                                                             |
+
+### Estado de publicación
+
+- Commit sobre la rama `feat/phase-02-modelo-datos-catalogo` (apilado tras 02.1-c). SIN push, SIN PR, SIN merge (misma política que la correctiva).
+- Al publicar: push → PR (cuerpo con checklist real) → Actions sobre el SHA exacto → artefactos escaneados → `PHASE-02.md` actualizado con SHA/URLs reales → merge verificado → CI post-merge.
+
 ## Criterios de salida de la fase (parcial)
 
-| ID  | Criterio (FASE_02)                                 | Estado    | Notas                                                                             |
-| --- | -------------------------------------------------- | --------- | --------------------------------------------------------------------------------- |
-| 1   | Schemas con errores comprensibles y ruta de campo  | CUMPLIDO  | Invariantes por unidad + override validado; mensajes con explicación de la unidad |
-| 2   | IDs estables                                       | CUMPLIDO  | Sin cambios en esta iteración (ya cubierto en 02.1)                               |
-| 3   | Catálogo con propiedades/unidades                  | PENDIENTE | Prompt 02.2 (no iniciado; la política exige cerrar primero la correctiva)         |
-| 4   | Importación/migración sin pérdida silenciosa       | PENDIENTE | Prompt 02.3                                                                       |
-| 5   | Auditoría de salida (ida y vuelta, extensibilidad) | PENDIENTE | Prompt 02.4                                                                       |
+| ID  | Criterio (FASE_02)                                 | Estado           | Notas                                                                              |
+| --- | -------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------- |
+| 1   | Schemas con errores comprensibles y ruta de campo  | CUMPLIDO         | Invariantes por unidad + override validado; mensajes con explicación de la unidad  |
+| 2   | IDs estables                                       | CUMPLIDO         | Sin cambios en esta iteración (ya cubierto en 02.1)                                |
+| 3   | Catálogo con propiedades/unidades                  | CUMPLIDO (local) | Prompt 02.2 ejecutado y verificado; pendiente de publicación junto a la correctiva |
+| 4   | Importación/migración sin pérdida silenciosa       | PENDIENTE        | Prompt 02.3                                                                        |
+| 5   | Auditoría de salida (ida y vuelta, extensibilidad) | PENDIENTE        | Prompt 02.4                                                                        |
 
 ## Pendientes de la fase
 
-1. Publicar e integrar la iteración correctiva 02.1-b cuando la nueva credencial esté configurada (flujo descrito arriba).
-2. Ejecutar el prompt 02.2 (catálogo/presets) solo después de integrada y verificada la correctiva.
-3. Prompts 02.3 (importación/migración) y 02.4 (auditoría de salida) después.
-4. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).
+1. Publicar e integrar la rama completa (correctiva 02.1-b/c + catálogo 02.2) cuando la escritura remota esté disponible; flujo de publicación documentado arriba.
+2. Prompts 02.3 (importación/migración) y 02.4 (auditoría de salida) después, en orden.
+3. Rotación del token confirmada por el propietario y fecha registrada en `PHASE-01.md` (incidente de seguridad).

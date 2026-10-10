@@ -1,0 +1,18 @@
+{
+  "id": "cat_fixture-table-4",
+  "group": "table",
+  "label": "Mesa fixture",
+  "description": "Preset de prueba con dimensión no finita (width 1e999 = Infinity al parsear).",
+  "family": "furniture",
+  "layer": "furniture",
+  "tags": ["prueba"],
+  "dimensions": { "width": 1e999, "depth": 0.9 },
+  "heightM": 0.75,
+  "interactionPoint": { "x": 0, "y": 0.9 },
+  "materials": [{ "id": "wood", "label": "Madera", "suggestedColor": "#8b5a2b" }],
+  "defaultMaterialId": "wood",
+  "parameters": {},
+  "flags": {},
+  "iconId": "table",
+  "usageNotes": ["Nota de prueba."]
+}
