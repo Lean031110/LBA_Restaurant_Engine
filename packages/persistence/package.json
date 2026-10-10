@@ -1,0 +1,21 @@
+{
+  "name": "@lba/persistence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Importación, exportación y migración de escenarios para LBA_Restaurant_Engine (prompt 02.3): parse/validate JSON sin pérdida silenciosa, formato exportable determinista y política de migraciones documentada.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@lba/domain": "0.1.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
+  }
+}

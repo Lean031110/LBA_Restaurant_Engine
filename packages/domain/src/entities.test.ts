@@ -202,6 +202,27 @@ describe('TaskTemplate', () => {
       expect(result.issues[0].path).toBe('fallbackTaskId')
     }
   })
+
+  it('rechaza duraciones de paso negativas con la ruta del paso exacta', () => {
+    const result = validate(TaskTemplateSchema, {
+      ...base,
+      steps: [
+        {
+          name: 'Tomar comanda',
+          durationSeconds: {
+            value: -120,
+            unit: 's',
+            sourceType: 'estimated',
+            confidence: 'low',
+          },
+        },
+      ],
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.path === 'steps[0].durationSeconds.value')).toBe(true)
+    }
+  })
 })
 
 describe('Equipment', () => {
@@ -247,6 +268,100 @@ describe('Equipment', () => {
       targetTemperatureC: estimatedSeconds(200),
     })
     expect(result.ok).toBe(false)
+  })
+
+  it('rechaza duraciones negativas en todos los campos de segundos del equipo', () => {
+    const campos = [
+      'powerOnSeconds',
+      'warmupSeconds',
+      'heatRecoverySeconds',
+      'cycleSeconds',
+      'cleaningSeconds',
+      'cooldownSeconds',
+    ] as const
+    for (const campo of campos) {
+      const result = validate(EquipmentSchema, {
+        ...base,
+        [campo]: {
+          value: -30,
+          unit: 's',
+          sourceType: 'estimated',
+          confidence: 'low',
+        },
+      })
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.issues.some((i) => i.path === `${campo}.value`)).toBe(true)
+      }
+    }
+  })
+
+  it('acepta duración 0 s donde tiene sentido operacional (encendido instantáneo)', () => {
+    const result = validate(EquipmentSchema, {
+      ...base,
+      powerOnSeconds: {
+        value: 0,
+        unit: 's',
+        sourceType: 'manufacturer',
+        confidence: 'medium',
+      },
+    })
+    expect(result.ok).toBe(true)
+  })
+
+  it('admite un rango de temperatura de congelador de −25 a −15 °C', () => {
+    const result = validate(EquipmentSchema, {
+      ...base,
+      kind: 'freezer',
+      targetTemperatureC: {
+        value: -20,
+        unit: 'C',
+        sourceType: 'estimated',
+        confidence: 'low',
+        minValue: -25,
+        maxValue: -15,
+      },
+    })
+    expect(result.ok).toBe(true)
+  })
+
+  it('rechaza un override de temperatura fuera del rango declarado', () => {
+    const result = validate(EquipmentSchema, {
+      ...base,
+      kind: 'freezer',
+      targetTemperatureC: {
+        value: -20,
+        unit: 'C',
+        sourceType: 'estimated',
+        confidence: 'low',
+        minValue: -25,
+        maxValue: -15,
+        scenarioOverrideValue: 10,
+      },
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.path === 'targetTemperatureC.scenarioOverrideValue')).toBe(
+        true,
+      )
+    }
+  })
+
+  it('acepta un override de temperatura dentro del rango declarado', () => {
+    const result = validate(EquipmentSchema, {
+      ...base,
+      kind: 'freezer',
+      targetTemperatureC: {
+        value: -20,
+        unit: 'C',
+        sourceType: 'estimated',
+        confidence: 'low',
+        minValue: -25,
+        maxValue: -15,
+        scenarioOverrideValue: -18,
+      },
+    })
+    expect(result.ok).toBe(true)
   })
 })
 
@@ -334,6 +449,30 @@ describe('Recipe', () => {
       components: [{ inventoryItemId: 'inv_carne', quantity: 5, unit: 'onzas' }],
     })
     expect(unidad.ok).toBe(false)
+  })
+
+  it('rechaza duraciones de paso negativas con la ruta del paso', () => {
+    const result = validate(RecipeSchema, {
+      ...base,
+      steps: [
+        {
+          name: 'Cocinar',
+          kind: 'cook',
+          durationSeconds: {
+            value: -240,
+            unit: 's',
+            sourceType: 'estimated',
+            confidence: 'low',
+          },
+          requiredResourceIds: ['eq_plancha-01'],
+        },
+        plateStep,
+      ],
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.path === 'steps[0].durationSeconds.value')).toBe(true)
+    }
   })
 })
 

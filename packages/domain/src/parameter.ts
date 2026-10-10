@@ -1,11 +1,56 @@
 import { z } from 'zod'
-import { NonNegativeFiniteNumberSchema, ParameterUnitSchema } from './units'
+import { FiniteNumberSchema, ParameterUnitSchema } from './units'
+import type { ParameterUnit } from './units'
 
 /**
  * Registro de parámetro de simulación (regla 10 del prompt maestro y
  * plantilla docs/guia/PLANTILLAS/REGISTRO_DE_PARAMETRO.md): cada duración,
  * temperatura, capacidad y porcentaje lleva unidad, procedencia y confianza.
  * Los valores de ejemplo son estimaciones editables, nunca mediciones.
+ *
+ * Invariantes semánticos por unidad (se aplican por igual a `value`,
+ * `minValue`, `maxValue` y `scenarioOverrideValue`):
+ *
+ * - `s` (duración): no negativa. Todo tiempo de simulación representado en
+ *   segundos — encendido y calentamiento de equipos, cocción y preparación,
+ *   ciclos de trabajo, limpieza, recuperación térmica, enfriamiento, pasos
+ *   de tareas/recetas y totales estimados — es tiempo transcurrido y no
+ *   puede ser negativo. El 0 se admite donde tiene sentido operacional
+ *   (encendido instantáneo, paso inmediato); un rango más estricto lo
+ *   declara el usuario con `minValue`/`maxValue`. No se impone tope superior
+ *   alguno: no se inventan límites arbitrarios que el usuario no pueda editar.
+ * - `C` (temperatura): solo se exige número finito. Las temperaturas Celsius
+ *   pueden ser negativas (p. ej. un congelador con rango −25 a −15 °C); no
+ *   se imponen cotas físicas no declaradas por el contrato. Se mantiene el
+ *   orden de los límites y la coherencia valor–unidad–rango declarado.
+ * - `m`/`cm` (longitud): no negativas, con decimales. Decisión de diseño
+ *   confirmada contra el contrato: los parámetros de longitud del dominio
+ *   son magnitudes — dimensiones, huellas, alturas, despejes, distancias y
+ *   radios (docs/guia/01 §«Las dimensiones del local se almacenan en metros
+ *   o centímetros de mundo… longitudes en metros»; docs/guia/02 propiedad
+ *   `accessibleClearance` de mesa; prompt 02.2 «dimensiones, huella, punto
+ *   de interacción»). `ParameterRecord` representa escalares con unidad del
+ *   catálogo: las cantidades espaciales CON SIGNO (coordenadas,
+ *   desplazamientos, vectores de movimiento) no son parámetros — viven en
+ *   `PositionSchema` (x/y finitas con signo) y vivirán en los tipos del
+ *   motor de movilidad (FASE 07). Camino de extensión si algún día se
+ *   necesitara una longitud con signo como parámetro: añadir una unidad o
+ *   variante EXPLÍCITA al enum con su semántica documentada en
+ *   `UNIT_CONSTRAINTS`; las cotas de `m`/`cm` jamás se relajan en silencio.
+ * - `persons` (personas): entero no negativo; cuenta personas discretas.
+ * - `unit` (artículos): entero no negativo; cuenta artículos discretos.
+ * - `%` (porcentaje): entre 0 y 100 inclusive, por definición de la unidad
+ *   (docs de unidades: «porcentaje (0–100)»).
+ *
+ * No duplicación de reglas (requisito para el catálogo 02.2 y el editor):
+ * `UNIT_CONSTRAINTS` es la única fuente de verdad de estas cotas. El
+ * catálogo de presets y el editor DEBEN reutilizar `ParameterRecordSchema`
+ * y `UNIT_CONSTRAINTS` declarando solo datos (valor, rango editable,
+ * procedencia); re-implementar estas reglas en otra capa está prohibido
+ * para que nada pueda contradecir al dominio. Además, los rangos
+ * declarados (`minValue`/`maxValue`) se validan contra las cotas de la
+ * unidad: un catálogo no puede declarar un rango que viole la semántica
+ * de su unidad (p. ej. `maxValue` 200 en `%`, o `minValue` −10 en `s`).
  */
 
 /** Procedencia del valor (regla 10 y riesgo R-02). */
@@ -23,19 +68,129 @@ export const ParameterConfidenceSchema = z.enum(['low', 'medium', 'high'])
 export type ParameterConfidence = z.infer<typeof ParameterConfidenceSchema>
 
 /**
+ * Restricciones numéricas que la propia unidad impone a los cuatro campos
+ * numéricos del registro. `min`/`max` son inclusivos; `integer` exige
+ * cantidades enteras. La ausencia de cota («undefined») significa que la
+ * unidad solo exige un número finito: el rango editable lo define el
+ * usuario con `minValue`/`maxValue`, nunca esta tabla.
+ */
+export interface UnitConstraints {
+  /** Límite inferior inclusivo de la unidad, si la magnitud lo justifica. */
+  min?: number
+  /** Límite superior inclusivo de la unidad, si la magnitud lo justifica. */
+  max?: number
+  /** Si la unidad representa cantidades enteras (discretas). */
+  integer?: boolean
+}
+
+/**
+ * Restricciones por unidad del dominio (justificación en la documentación
+ * del módulo). Es la única fuente de verdad de estos límites: el catálogo
+ * de presets (02.2) y el editor la reutilizan en lugar de duplicarlas.
+ */
+export const UNIT_CONSTRAINTS: Record<ParameterUnit, UnitConstraints> = {
+  s: { min: 0 },
+  C: {},
+  m: { min: 0 },
+  cm: { min: 0 },
+  persons: { min: 0, integer: true },
+  unit: { min: 0, integer: true },
+  '%': { min: 0, max: 100 },
+}
+
+/** Explicación humana de la restricción de cada unidad (mensajes de error). */
+const UNIT_EXPLANATIONS: Record<ParameterUnit, string> = {
+  s: 'una duración de simulación no puede ser negativa',
+  C: 'las temperaturas en grados Celsius admiten valores negativos',
+  m: 'un parámetro de longitud en metros es una magnitud y no puede ser negativo',
+  cm: 'un parámetro de longitud en centímetros es una magnitud y no puede ser negativo',
+  persons: 'un conteo de personas es un entero no negativo',
+  unit: 'un conteo de artículos es un entero no negativo',
+  '%': 'un porcentaje vive entre 0 y 100',
+}
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * Comprueba que la fecha existe en el calendario real: rechaza
+ * «2026-02-30», «2026-13-01» o «2026-04-31», y acepta bisiestos reales
+ * como «2024-02-29». No basta con el formato YYYY-MM-DD.
+ */
+function isRealCalendarDate(raw: string): boolean {
+  if (!ISO_DATE_PATTERN.test(raw)) {
+    return false
+  }
+  const year = Number(raw.slice(0, 4))
+  const month = Number(raw.slice(5, 7))
+  const day = Number(raw.slice(8, 10))
+  if (month < 1 || month > 12) {
+    return false
+  }
+  // Día 0 del mes siguiente = último día del mes consultado (maneja bisiestos).
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return day >= 1 && day <= daysInMonth
+}
+
+/** Milisegundos de un día; base de la tolerancia temporal de `verifiedAt`. */
+const MS_PER_DAY = 86_400_000
+
+/**
+ * Comprueba que la fecha de verificación no esté en el futuro: verificar
+ * una fuente es un evento ya ocurrido, no una cita pendiente. La
+ * comparación usa la fecha UTC en curso más una tolerancia de 1 día para
+ * no rechazar la fecha local «de hoy» registrada en zonas horarias por
+ * delante de UTC (el desfase máximo del planeta es UTC+14).
+ */
+function isFutureVerificationDate(raw: string, now: Date): boolean {
+  const year = Number(raw.slice(0, 4))
+  const month = Number(raw.slice(5, 7))
+  const day = Number(raw.slice(8, 10))
+  const dateMs = Date.UTC(year, month - 1, day)
+  const todayUtcMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  return dateMs > todayUtcMs + MS_PER_DAY
+}
+
+/**
+ * Fecha de verificación ISO-8601 que existe en el calendario real y no es
+ * futura (con tolerancia de 1 día para zonas horarias por delante de UTC).
+ * Es la fecha en que se comprobó la fuente del valor (docs/guia/02:
+ * «se cita la fuente, se registra la fecha»), por lo que un valor como
+ * «2999-12-31» es tan inválido como «2026-02-30».
+ */
+export const VerifiedAtSchema = z.string().superRefine((raw, ctx) => {
+  if (!isRealCalendarDate(raw)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'verifiedAt debe ser una fecha real del calendario en formato ISO (YYYY-MM-DD)',
+    })
+    return
+  }
+  if (isFutureVerificationDate(raw, new Date())) {
+    ctx.addIssue({
+      code: 'custom',
+      message:
+        'verifiedAt no puede ser una fecha futura: es la fecha en que se verificó la fuente (se admite hasta 1 día por delante de la fecha UTC en curso)',
+    })
+  }
+})
+export type VerifiedAt = z.infer<typeof VerifiedAtSchema>
+
+/**
  * Cuerpo del registro de parámetro (sin refinamientos de rango; se aplican
  * después para poder derivar variantes con unidad fija mediante `.extend`).
+ * Los cuatro campos numéricos solo exigen ser finitos aquí: el signo, la
+ * integralidad y las cotas de la unidad se comprueban en `withParameterRules`
+ * para poder distinguir temperaturas negativas legítimas de duraciones
+ * negativas inválidas.
  */
 const ParameterRecordObjectSchema = z.object({
   /** Valor nominal del parámetro. */
-  value: z.number().refine((v) => Number.isFinite(v), {
-    error: 'value debe ser un número finito',
-  }),
+  value: FiniteNumberSchema,
   /** Unidad explícita del valor. */
   unit: ParameterUnitSchema,
   /** Rango permitido para edición del usuario (opcional). */
-  minValue: NonNegativeFiniteNumberSchema.optional(),
-  maxValue: NonNegativeFiniteNumberSchema.optional(),
+  minValue: FiniteNumberSchema.optional(),
+  maxValue: FiniteNumberSchema.optional(),
   /** Procedencia del valor. */
   sourceType: ParameterSourceSchema,
   /** Confianza declarada del valor. */
@@ -44,44 +199,109 @@ const ParameterRecordObjectSchema = z.object({
   sourceName: z.string().min(1).optional(),
   /** URL de la fuente (opcional, formato verificado). */
   sourceUrl: z.url({ error: 'sourceUrl debe ser una URL válida' }).optional(),
-  /** Fecha de verificación en ISO-8601 (opcional). */
-  verifiedAt: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      error: 'verifiedAt debe ser una fecha ISO (YYYY-MM-DD)',
-    })
-    .optional(),
+  /** Fecha de verificación en ISO-8601: calendario real y no futura. */
+  verifiedAt: VerifiedAtSchema.optional(),
   /** Supuestos del modelo (opcional). */
   assumptions: z.string().min(1).optional(),
   /** Override del escenario: valor alternativo fijado por el usuario. */
-  scenarioOverrideValue: z
-    .number()
-    .refine((v) => Number.isFinite(v), {
-      error: 'scenarioOverrideValue debe ser un número finito',
-    })
-    .optional(),
+  scenarioOverrideValue: FiniteNumberSchema.optional(),
 })
 
 type ParameterRecordObject = z.infer<typeof ParameterRecordObjectSchema>
 
-/** Reglas de rango comunes a todo registro de parámetro. */
+/** Campos numéricos del registro sujetos a las restricciones de la unidad. */
+const NUMERIC_FIELDS = ['value', 'minValue', 'maxValue', 'scenarioOverrideValue'] as const
+type NumericFieldName = (typeof NUMERIC_FIELDS)[number]
+
+/** Aplica a un campo numérico las restricciones de la unidad declarada. */
+function applyUnitConstraints(
+  ctx: z.RefinementCtx,
+  field: NumericFieldName,
+  raw: number,
+  unit: ParameterUnit,
+): void {
+  const constraints = UNIT_CONSTRAINTS[unit]
+  if (constraints.integer && !Number.isInteger(raw)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [field],
+      message: `${field} debe ser un número entero (${UNIT_EXPLANATIONS[unit]})`,
+    })
+  }
+  if (constraints.min !== undefined && raw < constraints.min) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [field],
+      message: `${field} = ${raw} no es válido para la unidad "${unit}" (${UNIT_EXPLANATIONS[unit]})`,
+    })
+  }
+  if (constraints.max !== undefined && raw > constraints.max) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [field],
+      message: `${field} = ${raw} no es válido para la unidad "${unit}" (${UNIT_EXPLANATIONS[unit]})`,
+    })
+  }
+}
+
+/**
+ * Reglas semánticas comunes a todo registro de parámetro: cotas de la unidad
+ * en los cuatro campos numéricos, orden de los límites declarados,
+ * coherencia de `value` con su rango y los mismos límites para
+ * `scenarioOverrideValue` (un override fuera de rango es inválido igual
+ * que lo sería el valor base).
+ */
 function withParameterRules<S extends z.ZodType<ParameterRecordObject>>(schema: S) {
-  return schema
-    .refine(
-      (p) => p.minValue === undefined || p.maxValue === undefined || p.minValue <= p.maxValue,
-      {
-        error: 'minValue debe ser menor o igual que maxValue',
+  return schema.superRefine((p, ctx) => {
+    // 1. Cotas de la unidad aplicadas por igual a value, minValue, maxValue
+    //    y scenarioOverrideValue.
+    for (const field of NUMERIC_FIELDS) {
+      const raw = p[field]
+      if (raw !== undefined) {
+        applyUnitConstraints(ctx, field, raw, p.unit)
+      }
+    }
+    // 2. Orden de los límites declarados.
+    if (p.minValue !== undefined && p.maxValue !== undefined && p.minValue > p.maxValue) {
+      ctx.addIssue({
+        code: 'custom',
         path: ['minValue'],
-      },
-    )
-    .refine((p) => p.minValue === undefined || p.value >= p.minValue, {
-      error: 'value está por debajo del minValue declarado',
-      path: ['value'],
-    })
-    .refine((p) => p.maxValue === undefined || p.value <= p.maxValue, {
-      error: 'value supera el maxValue declarado',
-      path: ['value'],
-    })
+        message: 'minValue debe ser menor o igual que maxValue',
+      })
+    }
+    // 3. Coherencia de value con el rango declarado.
+    if (p.minValue !== undefined && p.value < p.minValue) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['value'],
+        message: 'value está por debajo del minValue declarado',
+      })
+    }
+    if (p.maxValue !== undefined && p.value > p.maxValue) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['value'],
+        message: 'value supera el maxValue declarado',
+      })
+    }
+    // 4. El override respeta el rango declarado del parámetro base.
+    if (p.scenarioOverrideValue !== undefined) {
+      if (p.minValue !== undefined && p.scenarioOverrideValue < p.minValue) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['scenarioOverrideValue'],
+          message: 'scenarioOverrideValue está por debajo del minValue declarado',
+        })
+      }
+      if (p.maxValue !== undefined && p.scenarioOverrideValue > p.maxValue) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['scenarioOverrideValue'],
+          message: 'scenarioOverrideValue supera el maxValue declarado',
+        })
+      }
+    }
+  })
 }
 
 /** Registro completo de un parámetro de simulación. */
@@ -89,7 +309,7 @@ export const ParameterRecordSchema = withParameterRules(ParameterRecordObjectSch
 
 export type ParameterRecord = z.infer<typeof ParameterRecordSchema>
 
-/** Parámetro de duración: unidad fija en segundos. */
+/** Parámetro de duración: unidad fija en segundos (no negativa). */
 export const SecondsParameterSchema = withParameterRules(
   ParameterRecordObjectSchema.extend({
     unit: z.literal('s', {
@@ -99,7 +319,7 @@ export const SecondsParameterSchema = withParameterRules(
 )
 export type SecondsParameter = z.infer<typeof SecondsParameterSchema>
 
-/** Parámetro de temperatura: unidad fija en grados Celsius. */
+/** Parámetro de temperatura: unidad fija en grados Celsius (admite negativos). */
 export const CelsiusParameterSchema = withParameterRules(
   ParameterRecordObjectSchema.extend({
     unit: z.literal('C', {

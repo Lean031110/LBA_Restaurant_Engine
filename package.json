@@ -13,7 +13,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tests/*"
   ],
   "devDependencies": {
     "eslint": "10.12.0",

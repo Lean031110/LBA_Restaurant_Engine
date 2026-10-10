@@ -13,6 +13,7 @@ import invalidNonFinite from '../../../scenarios/fixtures/invalid-nonfinite-posi
 import invalidUnits from '../../../scenarios/fixtures/invalid-bad-units.json'
 import invalidSource from '../../../scenarios/fixtures/invalid-bad-source-type.json'
 import invalidDimension from '../../../scenarios/fixtures/invalid-negative-dimension.json'
+import invalidNegativeDuration from '../../../scenarios/fixtures/invalid-negative-duration.json'
 
 describe('fixtures válidos', () => {
   it('valid-minimal.json pasa la validación completa', () => {
@@ -60,6 +61,7 @@ describe('fixtures válidos', () => {
       invalidUnits,
       invalidSource,
       invalidDimension,
+      invalidNegativeDuration,
     ]) {
       expect(isPlainObject(fixture)).toBe(true)
     }
@@ -110,6 +112,12 @@ describe('fixtures inválidos: rechazo con la ruta de campo exacta', () => {
       entrada: invalidDimension,
       rutaEsperada: 'objects[0].dimensions.width',
       fragmentoMensaje: 'mayor que 0',
+    },
+    {
+      nombre: 'duración negativa en calentamiento de equipo',
+      entrada: invalidNegativeDuration,
+      rutaEsperada: 'equipment[0].warmupSeconds.value',
+      fragmentoMensaje: 'no puede ser negativa',
     },
   ]
 

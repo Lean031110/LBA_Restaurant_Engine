@@ -1,0 +1,26 @@
+{
+  "id": "cat_zone-fixture",
+  "category": "kitchen",
+  "label": "Zona fixture",
+  "description": "Preset de zona de prueba sin reglas de acceso (el esquema exige al menos una).",
+  "tags": ["prueba"],
+  "suggestedSize": { "width": 4, "depth": 3 },
+  "defaultCapacity": {
+    "label": "Ocupación simultánea",
+    "editable": true,
+    "record": {
+      "value": 2,
+      "unit": "persons",
+      "minValue": 1,
+      "maxValue": 10,
+      "sourceType": "estimated",
+      "confidence": "low",
+      "verifiedAt": "2026-10-09",
+      "assumptions": "prueba"
+    }
+  },
+  "allowedRoles": ["staff"],
+  "accessRules": [],
+  "iconId": "zone",
+  "usageNotes": ["Nota de prueba."]
+}

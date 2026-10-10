@@ -1,0 +1,22 @@
+{
+  "name": "@lba/asset-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Catálogo declarativo de presets del local para LBA_Restaurant_Engine: objetos, zonas, materiales, propiedades editables e iconos vectoriales de respaldo (prompt 02.2 de docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md). Declara DATOS, no reglas: la semántica de unidades vive en @lba/domain.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@lba/domain": "0.1.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "cat_fixture-table-4",
+  "group": "table",
+  "label": "Mesa fixture",
+  "description": "Preset de prueba con punto de interacción a 5 m de la huella (permitido: 0,95 m).",
+  "family": "furniture",
+  "layer": "furniture",
+  "tags": ["prueba"],
+  "dimensions": { "width": 0.9, "depth": 0.9 },
+  "heightM": 0.75,
+  "interactionPoint": { "x": 5, "y": 5 },
+  "materials": [{ "id": "wood", "label": "Madera", "suggestedColor": "#8b5a2b" }],
+  "defaultMaterialId": "wood",
+  "parameters": {},
+  "flags": {},
+  "iconId": "table",
+  "usageNotes": ["Nota de prueba."]
+}

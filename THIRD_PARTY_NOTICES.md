@@ -19,6 +19,19 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 
 > Nota: `zod@4.6.5` ya figuraba en el árbol de dependencias (transitiva de `eslint-plugin-react-hooks`) y fue verificada de nuevo (licencia MIT, auditoría del CI) antes de promoverla a dependencia directa de `@lba/domain` en la FASE 02; no añade paquetes nuevos al lockfile.
 
+## packages/asset-catalog (FASE 02, prompt 02.2)
+
+- **Sin código de terceros**: el paquete declara datos (presets, materiales, propiedades, iconos) y reutiliza los esquemas de `@lba/domain`; su única dependencia de runtime es `zod@4.6.5` (workspace `@lba/domain`, misma versión ya verificada arriba), y las de desarrollo coinciden con las existentes (typescript, vitest, coverage-v8). El lockfile solo añade el link del workspace.
+- **Iconos vectoriales**: los 22 trazados SVG de `src/icons.ts` son obra original de este proyecto (geometría básica dibujada a mano; sin descargas ni redistribución de recursos de terceros), cubiertos por la licencia MIT del proyecto. No hay activos de terceros en el catálogo.
+
+## packages/persistence (FASE 02, prompt 02.3)
+
+- **Sin código de terceros**: importación/exportación de escenarios sobre `@lba/domain` (workspace) y JSON nativo; ni una dependencia externa nueva (el lockfile solo añade el link). Las herramientas de desarrollo (typescript, vitest, coverage-v8) coinciden con las ya verificadas; los fixtures usados por las pruebas son los propios de `scenarios/fixtures`.
+
+## tests/integration (FASE 02, cierre de fase)
+
+- **Sin código de terceros**: pruebas del flujo completo entre los workspaces `@lba/domain`, `@lba/asset-catalog` y `@lba/persistence` (enlaces de workspace, no paquetes externos). Las herramientas de desarrollo (typescript, vitest) coinciden con las ya verificadas; el escenario de prueba se instancia desde los presets del catálogo, sin activos externos.
+
 ## Dependencias directas — desarrollo (apps/web)
 
 | Paquete                   | Versión | Licencia   | URL oficial                                        | Finalidad                      |

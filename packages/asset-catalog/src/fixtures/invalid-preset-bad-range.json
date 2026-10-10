@@ -1,0 +1,33 @@
+{
+  "id": "cat_fixture-table-4",
+  "group": "table",
+  "label": "Mesa fixture",
+  "description": "Preset de prueba con un parámetro cuyo rango contradice a su unidad (% con maxValue 200).",
+  "family": "furniture",
+  "layer": "furniture",
+  "tags": ["prueba"],
+  "dimensions": { "width": 0.9, "depth": 0.9 },
+  "heightM": 0.75,
+  "interactionPoint": { "x": 0, "y": 0.9 },
+  "materials": [{ "id": "wood", "label": "Madera", "suggestedColor": "#8b5a2b" }],
+  "defaultMaterialId": "wood",
+  "parameters": {
+    "occupancy": {
+      "label": "Ocupación",
+      "editable": true,
+      "record": {
+        "value": 120,
+        "unit": "%",
+        "minValue": 0,
+        "maxValue": 200,
+        "sourceType": "estimated",
+        "confidence": "low",
+        "verifiedAt": "2026-10-09",
+        "assumptions": "prueba"
+      }
+    }
+  },
+  "flags": {},
+  "iconId": "table",
+  "usageNotes": ["Nota de prueba."]
+}
