@@ -9,14 +9,20 @@ import { z } from 'zod'
  * Formato: `prefijo_` + cuerpo kebab-case de [a-z0-9-] (2..64 caracteres).
  */
 const ID_BODY = '[a-z0-9]+(?:-[a-z0-9]+)*'
-const ID_MAX_LENGTH = 64
+const ID_MIN_BODY = 2
+const ID_MAX_BODY = 64
 
 function prefixedId(prefix: string) {
   const pattern = new RegExp(`^${prefix}_${ID_BODY}$`)
+  const minLength = prefix.length + 1 + ID_MIN_BODY
+  const maxLength = prefix.length + 1 + ID_MAX_BODY
   return z
     .string()
-    .max(ID_MAX_LENGTH + prefix.length + 1, {
-      error: `el ID debe tener como máximo ${ID_MAX_LENGTH + prefix.length + 1} caracteres`,
+    .min(minLength, {
+      error: `el ID debe tener al menos ${minLength} caracteres: "${prefix}_" + cuerpo de ${ID_MIN_BODY} a ${ID_MAX_BODY}`,
+    })
+    .max(maxLength, {
+      error: `el ID debe tener como máximo ${maxLength} caracteres: "${prefix}_" + cuerpo de ${ID_MIN_BODY} a ${ID_MAX_BODY}`,
     })
     .regex(pattern, {
       error: `ID inválido: se esperaba el formato "${prefix}_<kebab-case>" (ej. "${prefix}_mesa-01")`,

@@ -45,14 +45,19 @@ export const INTERACTION_FRONT_OFFSET_M = 0.45
  * Identificador de preset: `cat_` + cuerpo kebab-case (2..64), mismo formato
  * que los IDs de @lba/domain (ids.ts) para consistencia visual y de errores.
  */
+const PRESET_ID_PREFIX = 'cat_'
 const PRESET_ID_BODY = '[a-z0-9]+(?:-[a-z0-9]+)*'
-const PRESET_ID_MAX = 64
+const PRESET_ID_MIN_BODY = 2
+const PRESET_ID_MAX_BODY = 64
 export const PresetIdSchema = z
   .string()
-  .max(PRESET_ID_MAX + 5, {
-    error: `el ID de preset debe tener como máximo ${PRESET_ID_MAX + 5} caracteres`,
+  .min(PRESET_ID_PREFIX.length + PRESET_ID_MIN_BODY, {
+    error: `el ID de preset debe tener al menos ${PRESET_ID_PREFIX.length + PRESET_ID_MIN_BODY} caracteres: "cat_" + cuerpo de ${PRESET_ID_MIN_BODY} a ${PRESET_ID_MAX_BODY}`,
   })
-  .regex(new RegExp(`^cat_${PRESET_ID_BODY}$`), {
+  .max(PRESET_ID_PREFIX.length + PRESET_ID_MAX_BODY, {
+    error: `el ID de preset debe tener como máximo ${PRESET_ID_PREFIX.length + PRESET_ID_MAX_BODY} caracteres: "cat_" + cuerpo de ${PRESET_ID_MIN_BODY} a ${PRESET_ID_MAX_BODY}`,
+  })
+  .regex(new RegExp(`^${PRESET_ID_PREFIX}${PRESET_ID_BODY}$`), {
     error:
       'ID de preset inválido: se esperaba el formato "cat_<kebab-case>" (ej. "cat_table-round-4")',
   })

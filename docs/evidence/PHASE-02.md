@@ -249,8 +249,8 @@ Aserciones del paquete domain: 273 → 288 `expect` (+15); ninguna aserción pre
 
 ## Pendientes de la fase
 
-1. ~~Publicar e integrar la rama completa~~ — **COMPLETADO (2026-10-10)**: PR #5 fusionado (squash `046bd28`), Actions verificados job a job sobre el SHA exacto y artefactos inspeccionados (ver «Registro post-integración»). El estado pasó a APROBADA y FASE 03 queda habilitada tras la revisión del propietario.
-2. Revocación del token antiguo del incidente de seguridad confirmada por el propietario y fecha registrada en `PHASE-01.md` (la credencial en uso fue renovada el 2026-10-10; el registro histórico se conserva).
+1. ~~Publicar e integrar la rama completa~~ — **COMPLETADO (2026-10-10)**: PR #5 fusionado (squash `046bd28`), Actions verificados job a job sobre el SHA exacto y artefactos inspeccionados (ver «Registro post-integración»). El estado pasó a APROBADA. _(Actualización 2026-10-11: la revisión post-integración del propietario detectó dos defectos; corrección registrada en «Corrección post-integración» al final.)_
+2. Incidente de seguridad del token (registro completo en `PHASE-01.md`): **credencial nueva en uso CONFIRMADA** (proporcionada directamente por el propietario el 2026-10-10, con la que se publicaron y fusionaron los PR #5 y #6, resultados confirmados por el propietario el 2026-10-11); **revocación del token antiguo PENDIENTE de confirmación explícita del propietario** — el incidente permanece abierto únicamente por esa pendiente. Este punto corrige una redacción anterior que describía la credencial como «renovada» sin base confirmada.
 
 ---
 
@@ -320,7 +320,7 @@ Los resultados anteriores son **locales** y quedaron confirmados por GitHub Acti
 
 ## Registro post-integración (2026-10-10) — publicación, verificación en Actions y merge
 
-**Origen**: acceso de escritura al remoto disponible de nuevo (credencial renovada por el propietario el 2026-10-10). El flujo de publicación documentado en la sección 3 se ejecutó **sin cambios**.
+**Origen**: acceso de escritura al remoto disponible de nuevo (credencial nueva proporcionada directamente por el propietario el 2026-10-10; ver la reconciliación del incidente en `PHASE-01.md`). El flujo de publicación documentado en la sección 3 se ejecutó **sin cambios**.
 
 ### Pre-publicación (re-verificada con acceso autenticado)
 
@@ -365,9 +365,51 @@ Los resultados anteriores son **locales** y quedaron confirmados por GitHub Acti
 
 - **Conflictos**: ninguno (avance puro sobre `main`; merge-base = base del PR).
 - **Defectos detectados/corregidos durante la publicación**: ninguno nuevo — el único defecto del cierre (mapa de módulos desactualizado) ya estaba corregido en `cf54541` antes del push; Actions no reportó ninguna divergencia frente a la verificación local.
-- **Riesgos remanentes**: `requiredResourceIds` como texto libre (decisión de contrato documentada; FASE 06 lo tipa); confirmación pendiente del propietario sobre la revocación del token antiguo del incidente de seguridad (ver `PHASE-01.md`).
+- **Riesgos remanentes**: `requiredResourceIds` como texto libre (decisión de contrato documentada; FASE 06 lo tipa); incidente del token antiguo abierto únicamente por la confirmación pendiente del propietario sobre su revocación en GitHub (estado reconciliado en `PHASE-01.md`; la credencial en uso es la nueva, confirmada). Dos defectos detectados por la revisión post-integración del propietario se corrigen en la sección «Corrección post-integración».
 
 ### Resultado de la fase
 
 - **Estado: `APROBADA`** — publicada + Actions verificados job a job sobre el SHA exacto + artefactos inspeccionados + merge + CI post-merge en verde. Los resultados «locales» de las secciones anteriores quedan confirmados por GitHub.
 - **FASE 03 (editor 2D) queda habilitada** a partir de este registro, pendiente de la revisión del propietario al cierre de FASE 02. No se inicia en esta iteración (instrucción explícita de parar antes).
+
+---
+
+## Corrección post-integración (2026-10-11) — defectos detectados en la revisión del propietario
+
+**Origen**: el propietario revisó directamente el repositorio y los resultados publicados tras el merge (`046bd28`/`f688673`), confirmó los PR #5/#6 y el CI en verde, y detectó **dos defectos** que exigen corrección antes de iniciar FASE 03. La corrección parte de `main` = `f688673` en una rama específica, sin reescribir ni alterar los merges anteriores.
+
+### Defecto 1 — pérdida silenciosa de campos desconocidos con nombres de prototipo
+
+- **Ubicación**: `packages/persistence/src/loss-check.ts`, línea 50 (versión `f688673`).
+- **Causa raíz**: la comprobación `if (!(key in parsedObject))` usaba el operador `in`, que consulta también la cadena de prototipos. Un campo desconocido llamado `constructor`, `toString` o `__proto__` que zod descartaba se daba por existente (miembro heredado de `Object.prototype`).
+- **Dos manifestaciones verificadas** (reproducidas con pruebas antes de corregir): con **valores simples**, la carga TENÍA ÉXITO y el campo se perdía en silencio; con **valores objeto**, la recursión bajaba al miembro heredado y el rechazo citaba una ruta engañosa (`constructor.x`) en lugar de la ruta exacta del campo perdido (`constructor`).
+- **Corrección**: `Object.hasOwn(parsedObject, key)` — solo propiedades propias (ES2022, ya requerido por la configuración TS del paquete).
+- **Pruebas de regresión** (ninguna aserción existente debilitada; los tests existentes de `loss-check`/`json`/integración se conservan íntegros):
+  - Unitarias (`loss-check.test.ts`): 7 nuevas — detección de campos propios `constructor`/`toString`/`__proto__` con valor simple y con valor objeto (dentro de arrays), y caso de control (las claves heredadas no se reportan si la entrada no las declara).
+  - Importación real (`json.test.ts`): 7 nuevas — a través de `loadScenarioJson` con JSON válido + campo inyectado como propiedad propia (vía `Object.defineProperty`, necesario para `__proto__`): nivel superior y anidado (`objects[0]`) con ruta exacta, código `unknown_field` y mensaje de no pérdida; y pureza (el escenario válido original sigue cargando con los mismos datos tras los rechazos).
+  - Flujo extremo a extremo (`tests/integration/failure-paths.test.ts`): 6 nuevas — exportación del escenario integrado → inyección en el texto JSON → importación, para los tres nombres en ambos niveles; la prueba de pureza existente se REFUERZA con las seis entradas adicionales (no se debilita).
+- **Reproducción documentada**: antes de la corrección, **12 pruebas de persistence** y **7 de integration** fallaban contra el código defectuoso; tras la corrección, todas pasan.
+
+### Defecto 2 — inconsistencia del esquema de IDs de preset
+
+- **Ubicación**: `packages/asset-catalog/src/preset.ts`, líneas 44–59 (versión `f688673`).
+- **Causa raíz**: el comentario documenta `cat_` + cuerpo kebab-case **(2..64)**, pero el patrón `[a-z0-9]+…` admitía un cuerpo de **1** carácter (`cat_a`) y el máximo total `PRESET_ID_MAX + 5` = 69 permitía un cuerpo de **65** (`cat_` mide 4, no 5).
+- **Corrección**: límites explícitos alineados con el contrato — `.min(6)` (cuerpo ≥ 2) y `.max(68)` (cuerpo ≤ 64), con mensajes que explican el rango del cuerpo; el patrón kebab-case se mantiene.
+- **Pruebas de regresión** (`preset.test.ts`): 8 nuevas — mínimo (cuerpo 2), máximo (cuerpo 64), un carácter de más (65), cuerpo de un solo carácter, prefijo incorrecto (5 variantes), guiones mal colocados (inicial/final/doble) y caracteres inválidos (mayúsculas/guion bajo/espacio/acentos).
+- **Defecto de la misma clase encontrado en la auditoría** (divulgación): `packages/domain/src/ids.ts` documenta el mismo contrato (cuerpo 2..64, línea 9) y su patrón también admitía un cuerpo de 1 carácter; su máximo total ya era correcto. Corregido en la misma iteración añadiendo `.min` por prefijo (criterio de cierre: «los IDs respeten los límites documentados»). Pruebas de regresión: 7 nuevas en `ids.test.ts` (mínimo, máximo, multi-segmento, un carácter, un carácter de más, guiones, caracteres inválidos; el prefijo incorrecto ya estaba cubierto por pruebas existentes).
+- **Reproducción documentada**: antes de la corrección, **2 pruebas de asset-catalog** (cuerpo de 1 y de 65 aceptados) y **1 de domain** (cuerpo de 1 aceptado) fallaban; tras la corrección, todas pasan. Los 48 presets del catálogo cumplen el contrato (el test que re-parsea todo el catálogo sigue en verde).
+
+### Cambios de coherencia documental (mismo PR)
+
+- `PHASE-01.md`: reconciliación del incidente del token exclusivamente con información confirmada por el propietario (credencial nueva confirmada; revocación del token antiguo pendiente; incidente abierto solo por esa pendiente).
+- `PHASE-02.md`: corrección de la redacción que describía la credencial como «renovada» sin base confirmada (este archivo) y registro de esta corrección.
+- `json.test.ts` (pureza): `'name' in obj` → `Object.hasOwn` — misma semántica en ese punto, misma disciplina de propiedades propias que el canal de no pérdida.
+
+### Verificación (estado al preparar el PR)
+
+- Paquetes afectados, tras la corrección (local, Node v24.21.0): domain **137/137**, asset-catalog **68/68**, persistence **71/71**, integration **26/26** (35 pruebas nuevas en total; 22 de ellas reproducían los defectos antes de corregir).
+- Verificación local completa 9/9 y verificación en Actions sobre el SHA exacto del PR: se ejecutan como parte de la publicación de esta corrección; el registro se completa con SHA/URL/runs reales tras la fusión, conforme al convenio del repositorio (igual que el registro post-integración de la fase).
+
+### Criterio de cierre de la corrección
+
+FASE 03 no se inicia hasta que: las regresiones estén cubiertas y el defecto de pérdida silenciosa corregido; los IDs respeten los límites documentados; la corrección esté integrada con CI post-merge en verde; y la situación de seguridad esté documentada sin contradicciones (hecho en este PR; queda pendiente únicamente la confirmación del propietario sobre la revocación del token antiguo, que es acción suya).

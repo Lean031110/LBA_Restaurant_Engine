@@ -47,7 +47,14 @@ export function collectUnknownFields(input: unknown, parsed: unknown): string[] 
       const parsedObject = isPlainObject(parsedValue) ? parsedValue : {}
       for (const key of Object.keys(inputValue)) {
         const nextPrefix = formatSegment(key, prefix)
-        if (!(key in parsedObject)) {
+        // Solo propiedades PROPIAS de la salida: el operador `in` consulta
+        // también la cadena de prototipos y un campo desconocido llamado
+        // "constructor", "toString" o "__proto__" (descartado por zod) se
+        // daba por existente al estar heredado de Object.prototype → pérdida
+        // silenciosa con valores simples, o ruta engañosa ("constructor.x")
+        // con valores objeto. Corregido tras la revisión post-integración de
+        // FASE 02 (2026-10-11).
+        if (!Object.hasOwn(parsedObject, key)) {
           paths.push(nextPrefix)
           continue
         }

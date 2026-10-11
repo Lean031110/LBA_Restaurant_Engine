@@ -3,6 +3,7 @@ import {
   CatalogObjectPresetSchema,
   CatalogZonePresetSchema,
   INTERACTION_POINT_MAX_OFFSET_M,
+  PresetIdSchema,
   estimatedSpec,
   flagSpec,
   frontInteractionPoint,
@@ -165,6 +166,58 @@ describe('CatalogZonePresetSchema', () => {
     if (!bad.success) {
       const issue = bad.error.issues.find((i) => i.path[0] === 'accessRules')
       expect(issue).toBeDefined()
+    }
+  })
+})
+
+describe('PresetIdSchema — límites del contrato documentado (cat_ + cuerpo de 2..64)', () => {
+  /** Regresión post-integración (revisión del propietario, 2026-10-11): el
+   * patrón admitía un cuerpo de 1 carácter y el máximo total permitía uno
+   * más que el contrato; ambos límites deben ajustarse a lo documentado. */
+
+  it('acepta el mínimo del contrato: "cat_" + cuerpo de 2 caracteres', () => {
+    expect(PresetIdSchema.safeParse('cat_ab').success).toBe(true)
+  })
+
+  it('acepta el máximo del contrato: "cat_" + cuerpo de 64 caracteres (68 en total)', () => {
+    expect(PresetIdSchema.safeParse(`cat_${'a'.repeat(64)}`).success).toBe(true)
+  })
+
+  it('acepta un cuerpo multi-segmento kebab-case dentro de los límites', () => {
+    expect(PresetIdSchema.safeParse('cat_a-b').success).toBe(true)
+  })
+
+  it('rechaza un cuerpo de un solo carácter (por debajo del mínimo documentado)', () => {
+    const result = PresetIdSchema.safeParse('cat_a')
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain('al menos')
+    }
+  })
+
+  it('rechaza un carácter de más: cuerpo de 65 caracteres', () => {
+    const result = PresetIdSchema.safeParse(`cat_${'a'.repeat(65)}`)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain('como máximo')
+    }
+  })
+
+  it('rechaza prefijo incorrecto', () => {
+    for (const bad of ['dog_table', 'cattable', 'cat-table', 'CAT_table', 'cat__table']) {
+      expect(PresetIdSchema.safeParse(bad).success, bad).toBe(false)
+    }
+  })
+
+  it('rechaza guiones mal colocados (inicial, final, doble)', () => {
+    for (const bad of ['cat_-abc', 'cat_abc-', 'cat_a--b']) {
+      expect(PresetIdSchema.safeParse(bad).success, bad).toBe(false)
+    }
+  })
+
+  it('rechaza caracteres inválidos (mayúsculas, guion bajo, espacio, acentos)', () => {
+    for (const bad of ['cat_Table', 'cat_ta_ble', 'cat_ta ble', 'cat_méza']) {
+      expect(PresetIdSchema.safeParse(bad).success, bad).toBe(false)
     }
   })
 })

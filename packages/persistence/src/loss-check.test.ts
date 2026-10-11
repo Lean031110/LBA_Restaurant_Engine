@@ -67,3 +67,63 @@ describe('unknownFieldIssues', () => {
     expect(issues[0]?.message).toContain('no se descarta en silencio')
   })
 })
+
+/**
+ * Regresión post-integración (defecto detectado en la revisión del
+ * propietario, 2026-10-11): la comprobación de existencia usaba el operador
+ * `in`, que consulta también la cadena de prototipos. Un campo desconocido
+ * llamado "constructor", "toString" o "__proto__" que zod descartaba se daba
+ * por existente (miembro heredado de Object.prototype) y la pérdida era
+ * silenciosa. La comparación debe considerar SOLO propiedades propias.
+ */
+
+/** Nombres de miembros del prototipo usados como campos desconocidos. */
+const PROTOTYPE_NAMED_FIELDS = ['constructor', 'toString', '__proto__'] as const
+
+/**
+ * Define claves PROPIAS de forma segura para cualquier nombre:
+ * Object.defineProperty no dispara el setter de "__proto__" (a diferencia
+ * de la asignación) ni se confunde con miembros heredados.
+ */
+function withOwnProps(
+  target: Record<string, unknown>,
+  props: Record<string, unknown>,
+): Record<string, unknown> {
+  for (const [key, value] of Object.entries(props)) {
+    Object.defineProperty(target, key, {
+      value,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    })
+  }
+  return target
+}
+
+describe('collectUnknownFields — regresión: solo propiedades PROPIAS cuentan', () => {
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'detecta el campo desconocido propio "%s" (valor simple) que zod descartó',
+    (field) => {
+      // Con el operador `in` (defecto): `"toString" in { a: 1 }` → true
+      // (heredado) → el campo NO se reportaba → pérdida silenciosa.
+      const input = withOwnProps({ a: 1 }, { [field]: 'valor inesperado' })
+      expect(collectUnknownFields(input, { a: 1 })).toEqual([field])
+    },
+  )
+
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'detecta el campo desconocido propio "%s" con valor objeto (dentro de arrays)',
+    (field) => {
+      const input = {
+        objects: [withOwnProps({ id: 'obj_mesa-01' }, { [field]: { tramposo: true } })],
+      }
+      const parsed = { objects: [{ id: 'obj_mesa-01' }] }
+      expect(collectUnknownFields(input, parsed)).toEqual([`objects[0].${field}`])
+    },
+  )
+
+  it('las claves heredadas del prototipo NO se reportan si la entrada no las declara', () => {
+    // La entrada { a: 1 } no tiene "toString" propio: no hay nada que perder.
+    expect(collectUnknownFields({ a: 1 }, { a: 1 })).toEqual([])
+  })
+})
