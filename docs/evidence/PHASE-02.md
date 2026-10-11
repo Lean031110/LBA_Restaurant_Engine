@@ -1,7 +1,7 @@
 # Fase 02 — Modelo de datos y catálogo
 
-- Estado: `APROBADA` — prompt 02.1 integrado (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida) + cierre de fase (pruebas de integración en `tests/integration`) integrados vía PR #5**: squash en `main` `046bd280126c0b8c263eef93a9a5cba81a9d558d` (2026-10-10), Actions verificados **job a job** sobre el SHA exacto `bb05f6d31f514f5fffdaea1bc415ef7f6e34a291`, artefactos de evidencia inspeccionados (JUnit 300/300, cobertura, licencias, seguridad) y CI post-merge en verde (ver «Registro post-integración» al final)
-- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4, cierre de fase, publicación e integración) — fechas verificables por timestamps git
+- Estado: `APROBADA` — prompt 02.1 integrado (PR #4, squash `97bb93bd289f9635e54316b050588cae7d858733`); **correctiva 02.1-b/c + prompts 02.2 (catálogo), 02.3 (persistencia) y 02.4 (auditoría de salida) + cierre de fase (pruebas de integración en `tests/integration`) integrados vía PR #5**: squash en `main` `046bd280126c0b8c263eef93a9a5cba81a9d558d` (2026-10-10), Actions verificados **job a job** sobre el SHA exacto `bb05f6d31f514f5fffdaea1bc415ef7f6e34a291`, artefactos de evidencia inspeccionados (JUnit 300/300, cobertura, licencias, seguridad) y CI post-merge en verde; **corrección post-integración (defectos de la revisión del propietario) integrada vía PR #7** (squash `1a8e7e0`, 2026-10-11 — ver «Corrección post-integración» al final)
+- Fecha UTC: 2026-10-09 (02.1, correctiva 02.1-b, revisión 02.1-c) / 2026-10-10 (02.2, 02.3, 02.4, cierre de fase, publicación e integración) / 2026-10-11 (corrección post-integración) — fechas verificables por timestamps git
 - Archivo de fase: `docs/guia/FASES/FASE_02_MODELO_DATOS_CATALOGO.md` (prompts 02.1–02.4: TODOS ejecutados, publicados e integrados)
 
 ## Prompt 02.1 — Tipos y validadores del dominio (integrado)
@@ -405,11 +405,21 @@ Los resultados anteriores son **locales** y quedaron confirmados por GitHub Acti
 - `PHASE-02.md`: corrección de la redacción que describía la credencial como «renovada» sin base confirmada (este archivo) y registro de esta corrección.
 - `json.test.ts` (pureza): `'name' in obj` → `Object.hasOwn` — misma semántica en ese punto, misma disciplina de propiedades propias que el canal de no pérdida.
 
-### Verificación (estado al preparar el PR)
+### Verificación e integración (datos reales, 2026-10-11)
 
 - Paquetes afectados, tras la corrección (local, Node v24.21.0): domain **137/137**, asset-catalog **68/68**, persistence **71/71**, integration **26/26** (35 pruebas nuevas en total; 22 de ellas reproducían los defectos antes de corregir).
-- Verificación local completa 9/9 y verificación en Actions sobre el SHA exacto del PR: se ejecutan como parte de la publicación de esta corrección; el registro se completa con SHA/URL/runs reales tras la fusión, conforme al convenio del repositorio (igual que el registro post-integración de la fase).
+- Verificación local completa **9/9 OK** (npm ci, formato, lint, typecheck, tests **335/335**, build, smoke HTTP 200, 228 licencias OK, 0 vulnerabilidades).
+- **PR #7**: https://github.com/Lean031110/LBA_Restaurant_Engine/pull/7 — punta exacta `2e7b9bdecf9bfacd762b87701f9bcd11085d109c`, 10 archivos, +388/−13; diff remoto↔local idéntico; `mergeable_state: clean` (avance puro sobre `f688673`, sin conflictos).
+- **Actions sobre el SHA exacto** (job «Calidad» verificado paso a paso, 17/17): run [38108283888](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38108283888) (push, `2e7b9bd`) y run [38108305831](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38108305831) (pull_request, merge-ref `e25dbfd`) — ambos **success**, 335/335 pruebas confirmadas en los JUnit de los artefactos (`lba-ci-evidence-2e7b9bd…` id 11691385273 y `lba-ci-evidence-e25dbfd…` id 11690471344, descargados e inspeccionados), cobertura por paquete coincidente con la local, informe de licencias (228, 0 problemas) y `found 0 vulnerabilities` en los logs del job.
+- **Squash merge** del PR #7 → `main` en `1a8e7e000e428320ea59db53b06147044c826b14`; rama remota eliminada automáticamente; PR `closed`/`merged`.
+- **CI post-merge sobre `main`** (`1a8e7e0`): run [38108426656](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38108426656) — **completed/success**, 17/17 pasos, ninguno fallido.
+- Conflictos: ninguno. Defectos nuevos durante la publicación: ninguno (Actions sin divergencias frente a la verificación local).
 
 ### Criterio de cierre de la corrección
 
-FASE 03 no se inicia hasta que: las regresiones estén cubiertas y el defecto de pérdida silenciosa corregido; los IDs respeten los límites documentados; la corrección esté integrada con CI post-merge en verde; y la situación de seguridad esté documentada sin contradicciones (hecho en este PR; queda pendiente únicamente la confirmación del propietario sobre la revocación del token antiguo, que es acción suya).
+- ✅ Regresiones cubiertas y defecto de pérdida silenciosa corregido (35 pruebas nuevas; 22 reproducían los defectos antes de corregir; 335/335 tras la corrección).
+- ✅ IDs respetan los límites documentados (preset y dominio; 48 presets re-parseados en verde).
+- ✅ Corrección integrada (PR #7, squash `1a8e7e0`) con CI post-merge en verde (run 38108426656, 17/17 pasos).
+- ✅ Situación de seguridad documentada sin contradicciones (`PHASE-01.md`/`PHASE-02.md` reconciliados con lo confirmado; queda pendiente —acción del propietario— únicamente la confirmación explícita de la revocación del token antiguo, que no bloquea esta corrección publicada bajo instrucción explícita).
+
+FASE 03 no se inicia hasta que el propietario revise este cierre de corrección y dé luz verde (instrucción explícita de parar antes).
