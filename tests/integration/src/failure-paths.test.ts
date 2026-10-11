@@ -89,6 +89,40 @@ function textWithUnknownField(): string {
   })
 }
 
+/**
+ * Regresión post-integración (defecto detectado en la revisión del
+ * propietario, 2026-10-11): campos desconocidos con nombres de miembros del
+ * prototipo ("constructor", "toString", "__proto__") se perdían en silencio
+ * porque la comprobación de existencia usaba el operador `in` (cadena de
+ * prototipos). Se reproduce a través del flujo REAL: exportación del
+ * escenario integrado → inyección como propiedad propia en el texto JSON →
+ * importación. defineProperty es imprescindible para "__proto__": la
+ * asignación normal cambia el prototipo en vez de crear una clave propia.
+ */
+const PROTOTYPE_NAMED_FIELDS = ['constructor', 'toString', '__proto__'] as const
+
+/** Define una clave PROPIA en el objeto, segura para cualquier nombre. */
+function defineOwn(target: Plain, key: string, value: unknown): void {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  })
+}
+
+function textWithPrototypeNamedField(field: string): string {
+  return textMutating((plain) => {
+    defineOwn(plain, field, 'valor que el contrato v1 no define')
+  })
+}
+
+function textWithNestedPrototypeNamedField(field: string): string {
+  return textMutating((plain) => {
+    defineOwn(objectsOf(plain)[0] as Plain, field, { tramposo: true })
+  })
+}
+
 function expectFailure(
   result: ScenarioLoadResult,
 ): asserts result is { ok: false; issues: import('@lba/domain').ValidationIssue[] } {
@@ -170,6 +204,32 @@ describe('no pérdida silenciosa — campos desconocidos nunca se descartan', ()
   })
 })
 
+describe('no pérdida silenciosa — regresión: nombres de miembros del prototipo', () => {
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'el campo desconocido de nivel superior "%s" se rechaza con su ruta exacta',
+    (field) => {
+      const result = loadScenarioJson(textWithPrototypeNamedField(field))
+      expectFailure(result)
+      const issue = result.issues.find((i) => i.path === field)
+      expect(issue, JSON.stringify(result.issues.map((i) => i.path))).toBeDefined()
+      expect(issue?.code).toBe('unknown_field')
+      expect(issue?.message).toContain(`campo desconocido en "${field}"`)
+    },
+  )
+
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'el campo desconocido anidado objects[0]."%s" (valor objeto) se rechaza con su ruta exacta',
+    (field) => {
+      const result = loadScenarioJson(textWithNestedPrototypeNamedField(field))
+      expectFailure(result)
+      const issue = result.issues.find((i) => i.path === `objects[0].${field}`)
+      expect(issue, JSON.stringify(result.issues.map((i) => i.path))).toBeDefined()
+      expect(issue?.code).toBe('unknown_field')
+      expect(issue?.message).toContain(`campo desconocido en "objects[0].${field}"`)
+    },
+  )
+})
+
 describe('pureza — ningún fallo daña el escenario actual ni la entrada buena', () => {
   it('todas las cargas fallidas dejan intacto el escenario y la exportación buena', () => {
     const firstGood = loadScenarioJson(goodExport)
@@ -184,6 +244,14 @@ describe('pureza — ningún fallo daña el escenario actual ni la entrada buena
       { label: 'versión antigua', text: textWithVersion(0) },
       { label: 'versión futura', text: textWithVersion(2) },
       { label: 'campo desconocido', text: textWithUnknownField() },
+      ...PROTOTYPE_NAMED_FIELDS.map((field) => ({
+        label: `campo desconocido "${field}" (regresión prototipo)`,
+        text: textWithPrototypeNamedField(field),
+      })),
+      ...PROTOTYPE_NAMED_FIELDS.map((field) => ({
+        label: `campo desconocido anidado "${field}" (regresión prototipo)`,
+        text: textWithNestedPrototypeNamedField(field),
+      })),
     ]
     for (const failing of failingTexts) {
       const result = loadScenarioJson(failing.text)

@@ -195,7 +195,9 @@ describe('loadScenarioJson — pureza (nunca daña el escenario actual)', () => 
       // El dato devuelto es un objeto nuevo, no la entrada reutilizada.
       expect(result.data as unknown as object).not.toBe(input)
       // Mutar la salida no afecta a la entrada (aislamiento total).
-      if ('name' in (result.data as object)) {
+      // Object.hasOwn: misma disciplina de propiedades propias que el
+      // canal de no pérdida (regresión post-integración, 2026-10-11).
+      if (Object.hasOwn(result.data as object, 'name')) {
         ;(result.data as { name: string }).name = 'mutado'
       }
       expect(JSON.stringify(input)).toBe(snapshot)
@@ -211,6 +213,93 @@ describe('loadScenarioJson — pureza (nunca daña el escenario actual)', () => 
     expect(failed.ok).toBe(false)
     expect(exportScenario(first.data)).toBe(before)
     expect(first.data.name).toBe('Fixture completo válido')
+  })
+})
+
+/**
+ * Regresión post-integración (defecto detectado en la revisión del
+ * propietario, 2026-10-11): campos desconocidos con nombres de miembros del
+ * prototipo ("constructor", "toString", "__proto__") se perdían en silencio
+ * porque la comprobación de existencia usaba el operador `in`, que consulta
+ * la cadena de prototipos: el campo descartado por zod se daba por existente
+ * (heredado de Object.prototype) y la carga TENÍA ÉXITO. Estas pruebas
+ * reproducen el problema a través del canal REAL de importación
+ * (loadScenarioJson) con JSON válido + campo desconocido inyectado como
+ * propiedad propia (defineProperty: la asignación normal dispararía el
+ * setter de "__proto__" y no crearía una clave propia).
+ */
+
+const PROTOTYPE_NAMED_FIELDS = ['constructor', 'toString', '__proto__'] as const
+
+/** Define una clave PROPIA en el objeto, segura para cualquier nombre. */
+function defineOwn(target: Record<string, unknown>, key: string, value: unknown): void {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  })
+}
+
+/** Parsea el texto, inyecta claves propias y re-serializa (round-trip JSON). */
+function withOwnFields(text: string, define: (root: Record<string, unknown>) => void): string {
+  const parsed = JSON.parse(text) as Record<string, unknown>
+  define(parsed)
+  return JSON.stringify(parsed)
+}
+
+describe('loadScenarioJson — regresión: campos desconocidos con nombres de prototipo', () => {
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'rechaza el campo desconocido de nivel superior "%s" (valor simple) con su ruta exacta',
+    (field) => {
+      const text = withOwnFields(validCompleteText, (root) => {
+        defineOwn(root, field, 'valor que el contrato v1 no define')
+      })
+      const result = loadScenarioJson(text)
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.path)).toEqual([field])
+        expect(result.issues[0]?.code).toBe('unknown_field')
+        expect(result.issues[0]?.message).toContain(`campo desconocido en "${field}"`)
+        expect(result.issues[0]?.message).toContain('no se descarta en silencio')
+      }
+    },
+  )
+
+  it.each(PROTOTYPE_NAMED_FIELDS)(
+    'rechaza el campo desconocido anidado objects[0]."%s" (valor objeto) con su ruta exacta',
+    (field) => {
+      const text = withOwnFields(validCompleteText, (root) => {
+        const objects = root.objects as Record<string, unknown>[] | undefined
+        const first = objects?.[0]
+        if (!first) throw new Error('el fixture válido debe tener objetos')
+        defineOwn(first, field, { tramposo: true })
+      })
+      const result = loadScenarioJson(text)
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.path)).toEqual([`objects[0].${field}`])
+        expect(result.issues[0]?.code).toBe('unknown_field')
+        expect(result.issues[0]?.message).toContain(`campo desconocido en "objects[0].${field}"`)
+      }
+    },
+  )
+
+  it('el escenario válido original no se altera: sigue cargando con los mismos datos', () => {
+    const before = loadScenarioJson(validCompleteText)
+    expect(before.ok).toBe(true)
+    for (const field of PROTOTYPE_NAMED_FIELDS) {
+      const bad = withOwnFields(validCompleteText, (root) => {
+        defineOwn(root, field, { x: 1 })
+      })
+      const result = loadScenarioJson(bad)
+      expect(result.ok, field).toBe(false)
+    }
+    const after = loadScenarioJson(validCompleteText)
+    expect(after.ok).toBe(true)
+    if (after.ok && before.ok) {
+      expect(after.data).toEqual(before.data)
+    }
   })
 })
 
