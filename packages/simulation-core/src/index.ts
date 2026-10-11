@@ -44,3 +44,18 @@ export {
   type BlockedInfo,
   type SchedulerSummary,
 } from './tasks'
+export {
+  InvariantCodes,
+  checkInvariants,
+  assertInvariants,
+  type InvariantCode,
+  type InvariantViolation,
+} from './invariants'
+export {
+  watchdog,
+  buildWaitsFor,
+  findCycle,
+  type WatchdogStatus,
+  type WatchdogReport,
+  type StallReason,
+} from './watchdog'

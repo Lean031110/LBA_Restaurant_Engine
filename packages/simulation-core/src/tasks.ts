@@ -34,7 +34,9 @@
 
 import type { SimulationEngine } from './engine'
 import { EngineError, EngineErrorCodes } from './errors'
+import { assertInvariants, checkInvariants, type InvariantViolation } from './invariants'
 import { ResourcePool, type ResourceDefinition, type ResourceRequest } from './resources'
+import { watchdog, type WatchdogReport } from './watchdog'
 
 /** Código interno del evento de fin de tarea (espacio de nombres reservado). */
 export const TASK_COMPLETE_EVENT = '__task.complete'
@@ -287,6 +289,21 @@ export class TaskScheduler {
       resources,
       simulationTimeSeconds: this.motor.simulationTimeSeconds,
     }
+  }
+
+  /** Verifica las invariantes del contrato (informe; vacío = sano). */
+  checkInvariants(): InvariantViolation[] {
+    return checkInvariants(this.motor, this)
+  }
+
+  /** Como `checkInvariants` pero lanza con la primera violación. */
+  assertInvariants(): void {
+    assertInvariants(this.motor, this)
+  }
+
+  /** Watchdog lógico de progreso/deadlock (diagnóstico puro). */
+  watchdog(): WatchdogReport {
+    return watchdog(this.motor, this)
   }
 
   // ---- Internos ---------------------------------------------------------
