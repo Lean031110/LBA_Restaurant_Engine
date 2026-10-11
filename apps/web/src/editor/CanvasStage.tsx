@@ -55,7 +55,7 @@ export function CanvasStage({ store }: CanvasStageProps) {
   } | null>(null)
   const [spaceDown, setSpaceDown] = useState(false)
   const [size, setSize] = useState({ width: 900, height: 640 })
-  const [fitRequested, setFitRequested] = useState(false)
+  const lastFitSizeRef = useRef({ w: 0, h: 0 })
 
   // Tamaño del lienzo según su contenedor (ResponsiveObserver).
   useEffect(() => {
@@ -157,13 +157,16 @@ export function CanvasStage({ store }: CanvasStageProps) {
       const stage = stageRef.current
       const pointer = stage?.getPointerPosition()
       if (pointer) {
-        store.setView({
-          pixelsPerUnit: store.getState().view.pixelsPerUnit,
-          pan: {
-            x: pan.startPan.x + (pointer.x - pan.startScreen.x),
-            y: pan.startPan.y + (pointer.y - pan.startScreen.y),
+        store.setView(
+          {
+            pixelsPerUnit: store.getState().view.pixelsPerUnit,
+            pan: {
+              x: pan.startPan.x + (pointer.x - pan.startScreen.x),
+              y: pan.startPan.y + (pointer.y - pan.startScreen.y),
+            },
           },
-        })
+          { byUser: true },
+        )
       }
       return
     }
@@ -181,23 +184,19 @@ export function CanvasStage({ store }: CanvasStageProps) {
     const pointer = stage?.getPointerPosition()
     if (!pointer) return
     const factor = e.evt.deltaY < 0 ? 1.12 : 1 / 1.12
-    store.setView(zoomAt(store.getState().view, factor, pointer))
+    store.setView(zoomAt(store.getState().view, factor, pointer), { byUser: true })
   }
 
-  // Ajuste inicial de la vista cuando se conoce el tamaño real del lienzo.
-  useEffect(() => {
-    if (fitRequested || size.width < 50) return
-    setFitRequested(true)
-    fitView()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size.width, size.height])
-
+  // Ajuste de la vista: al cargar (con el tamaño REAL del contenedor, no el
+  // provisional) y cuando el contenedor cambia de tamaño, salvo que el
+  // usuario haya movido la vista manualmente (zoom/pan propios).
   const fitView = useCallback(() => {
     const { scenario } = store.getState().document
     const w = scenario.world.size.width
     const h = scenario.world.size.depth
     const zoom = Math.min((size.width - 80) / w, (size.height - 80) / h)
     const clamped = Math.min(600, Math.max(4, zoom))
+    store.clearUserViewFlag()
     store.setView({
       pixelsPerUnit: clamped,
       pan: {
@@ -205,8 +204,31 @@ export function CanvasStage({ store }: CanvasStageProps) {
         y: (size.height - h * clamped) / 2,
       },
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size.width, size.height, store])
+
+  useEffect(() => {
+    if (size.width < 50) return
+    const changed =
+      Math.abs(size.width - lastFitSizeRef.current.w) > 16 ||
+      Math.abs(size.height - lastFitSizeRef.current.h) > 16
+    if (!changed || store.hasUserView()) return
+    lastFitSizeRef.current = { w: size.width, h: size.height }
+    fitView()
+  }, [size.width, size.height, fitView, store])
+
+  // Red de seguridad: si el botón se suelta FUERA del lienzo (arrastre que
+  // acaba sobre otro panel), el borrador/arrastre en curso se confirma igual.
+  useEffect(() => {
+    const onWindowMouseUp = () => {
+      const s = store.getState()
+      if (s.draft !== null || s.moveDrag !== null || s.marquee !== null) {
+        panRef.current = null
+        store.pointerUp()
+      }
+    }
+    window.addEventListener('mouseup', onWindowMouseUp)
+    return () => window.removeEventListener('mouseup', onWindowMouseUp)
+  }, [store])
 
   // Expone el ajuste al resto de la UI (botón «Ajustar» de la barra superior).
   useEffect(() => {

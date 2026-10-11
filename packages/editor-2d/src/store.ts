@@ -20,7 +20,7 @@ import { instantiateObject, instantiateZone } from './instantiate'
 import { nextObjectId } from './ids'
 import { computeOverlappingObjects } from './overlap'
 import { buildRenderModel } from './render-model'
-import { initialViewport } from './transforms'
+import { clampZoom as clampZoomValue, initialViewport } from './transforms'
 import { snapPoint, snapToWallEndpoints, snapWallEnd } from './snap'
 import * as cmd from './commands'
 import type { CommandResult } from './commands'
@@ -76,6 +76,8 @@ export class EditorStore {
   private readonly listeners = new Set<() => void>()
   private messageSeq = 0
   private clockSeq = 0
+  /** La vista la ha movido el usuario (zoom/pan): el auto-ajuste se desactiva. */
+  private viewTouchedByUser = false
 
   constructor(initial?: EditorDocument) {
     this.state = this.baseState(initial ?? createEmptyDocument())
@@ -154,8 +156,41 @@ export class EditorStore {
     this.update({ grid: { ...this.state.grid, ...patch } })
   }
 
-  setView(view: Viewport): void {
+  setView(view: Viewport, options?: { byUser?: boolean }): void {
+    if (options?.byUser) this.viewTouchedByUser = true
     this.update({ view })
+  }
+
+  /** ¿El usuario ha ajustado la vista manualmente? */
+  hasUserView(): boolean {
+    return this.viewTouchedByUser
+  }
+
+  /** Rehabilita el auto-ajuste (tras un «Ajustar a la ventana»). */
+  clearUserViewFlag(): void {
+    this.viewTouchedByUser = false
+  }
+
+  /** Zoom por factor alrededor del centro (botones y teclado). */
+  zoomBy(factor: number): void {
+    const view = this.state.view
+    const next = clampZoomValue(view.pixelsPerUnit * factor)
+    this.viewTouchedByUser = true
+    if (next === view.pixelsPerUnit) return
+    this.update({
+      view: {
+        pixelsPerUnit: next,
+        // Mantiene el centro del mundo bajo el centro de la pantalla.
+        pan: {
+          x:
+            view.pan.x +
+            (view.pixelsPerUnit - next) * (this.state.document.scenario.world.size.width / 2),
+          y:
+            view.pan.y +
+            (view.pixelsPerUnit - next) * (this.state.document.scenario.world.size.depth / 2),
+        },
+      },
+    })
   }
 
   setCursor(world: Position | null): void {

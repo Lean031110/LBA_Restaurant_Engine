@@ -185,13 +185,11 @@ export function EditorApp({ store }: EditorAppProps) {
         return
       }
       if (e.key === '+' || e.key === '=') {
-        const view = store.getState().view
-        store.setView({ ...view, pixelsPerUnit: Math.min(600, view.pixelsPerUnit * 1.25) })
+        store.zoomBy(1.25)
         return
       }
       if (e.key === '-') {
-        const view = store.getState().view
-        store.setView({ ...view, pixelsPerUnit: Math.max(4, view.pixelsPerUnit / 1.25) })
+        store.zoomBy(1 / 1.25)
         return
       }
       if (e.key === '0') {
