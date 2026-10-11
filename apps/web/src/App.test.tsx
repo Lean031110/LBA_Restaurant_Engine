@@ -1,7 +1,7 @@
 /**
- * Prueba de humo de la pantalla base (FASE 01):
- * arranque, título, paneles de fases futuras y controles deshabilitados
- * con explicación (regla 16 de la guía).
+ * Prueba de humo de la pantalla base (FASE 01 + editor desde FASE 03):
+ * arranque, título, controles de simulación de fases futuras deshabilitados
+ * con explicación (regla 16) y presencia del editor 2D real (FASE 03).
  */
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -24,14 +24,31 @@ describe('App — pantalla base', () => {
     expect(screen.getByText('Simulador de operaciones de restaurante')).toBeInTheDocument()
   })
 
-  it('muestra los paneles de fases futuras con su fase correspondiente', () => {
+  it('renderiza el editor 2D real (FASE 03): herramientas, catálogo, lienzo e inspector', () => {
     montarApp()
-    expect(screen.getByRole('heading', { name: 'Herramientas' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Lienzo 2D' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Inspector' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Eventos y estadísticas' })).toBeInTheDocument()
-    // La guía exige explicar qué fase construirá cada panel.
-    expect(screen.getAllByText(/fase 03/).length).toBeGreaterThanOrEqual(3)
+    // 8 herramientas del contrato en la barra izquierda (por data-tool: los
+    // presets del catálogo también contienen palabras como «Pared»).
+    const toolbar = screen.getByRole('toolbar', { name: 'Herramientas del editor' })
+    for (const tool of [
+      'select',
+      'wall',
+      'door',
+      'window',
+      'object',
+      'zone',
+      'measure',
+      'delete',
+    ]) {
+      const button = toolbar.querySelector(`[data-tool="${tool}"]`)
+      expect(button).not.toBeNull()
+      expect(button?.getAttribute('aria-pressed')).toBe(tool === 'select' ? 'true' : 'false')
+    }
+    // Catálogo y lienzo con estado vacío explicado (03.3).
+    expect(screen.getByLabelText('Catálogo de presets')).toBeInTheDocument()
+    expect(screen.getByTestId('canvas-empty-state')).toBeInTheDocument()
+    // Inspector en modo escenario.
+    expect(screen.getByTestId('inspector-scenario')).toBeInTheDocument()
+    // El panel de eventos/estadísticas sigue siendo marcador de fase 09.
     expect(screen.getByText(/fase 09/)).toBeInTheDocument()
   })
 

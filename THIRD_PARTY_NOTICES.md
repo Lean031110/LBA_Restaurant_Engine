@@ -6,10 +6,14 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 
 ## Dependencias directas — runtime (apps/web)
 
-| Paquete   | Versión | Licencia | URL oficial       | Finalidad                      |
-| --------- | ------- | -------- | ----------------- | ------------------------------ |
-| react     | 19.3.0  | MIT      | https://react.dev | Biblioteca de interfaz         |
-| react-dom | 19.3.0  | MIT      | https://react.dev | Renderizado de React en el DOM |
+| Paquete     | Versión | Licencia | URL oficial               | Finalidad                         |
+| ----------- | ------- | -------- | ------------------------- | --------------------------------- |
+| react       | 19.3.0  | MIT      | https://react.dev         | Biblioteca de interfaz            |
+| react-dom   | 19.3.0  | MIT      | https://react.dev         | Renderizado de React en el DOM    |
+| konva       | 10.7.1  | MIT      | https://konvajs.org       | Lienzo 2D del editor (FASE 03)    |
+| react-konva | 19.3.0  | MIT      | https://konvajs.org/react | Enlace React del lienzo (FASE 03) |
+
+> Nota (FASE 03): `konva@10.7.1` y `react-konva@19.3.0` se verificaron en npm el 11 de octubre de 2026 (licencia MIT, mantenimiento activo, peers compatibles con React 19.3.0). Añaden transitivas de renderizado (`react-reconciler@0.34.0`, `its-fine@2.1.1`, `use-sync-external-store@1.5.0`, todas MIT) verificadas por la auditoría de licencias del CI (235 paquetes OK). La arquitectura se mantiene propia (regla 17): el núcleo del editor (@lba/editor-2d) es puro y sin Konva; la biblioteca solo renderiza.
 
 ## Dependencias directas — runtime (packages/domain, FASE 02)
 
@@ -31,6 +35,18 @@ Versiones y licencias verificadas en npm el **9 de octubre de 2026**.
 ## tests/integration (FASE 02, cierre de fase)
 
 - **Sin código de terceros**: pruebas del flujo completo entre los workspaces `@lba/domain`, `@lba/asset-catalog` y `@lba/persistence` (enlaces de workspace, no paquetes externos). Las herramientas de desarrollo (typescript, vitest) coinciden con las ya verificadas; el escenario de prueba se instancia desde los presets del catálogo, sin activos externos.
+
+## packages/editor-2d (FASE 03)
+
+- **Sin código de terceros**: el núcleo del editor (estado, comandos validados, historial de instantáneas, snapping, transformaciones mundo-pantalla, modelo de render) solo depende de los workspaces `@lba/domain`, `@lba/asset-catalog` y `@lba/persistence` (enlaces de workspace). El paquete es puro: sin React, sin DOM, sin Konva (regla 11). Las herramientas de desarrollo (typescript, vitest, coverage-v8) coinciden con las ya verificadas.
+
+## tests/e2e (FASE 03, prompt 03.4)
+
+| Paquete          | Versión | Licencia   | URL oficial            | Finalidad                                     |
+| ---------------- | ------- | ---------- | ---------------------- | --------------------------------------------- |
+| @playwright/test | 1.64.0  | Apache-2.0 | https://playwright.dev | E2E del editor sobre la build real (Chromium) |
+
+> Nota: `@playwright/test@1.64.0` se verificó en npm el 11 de octubre de 2026 (licencia Apache-2.0, mantenimiento activo de Microsoft). Es una dependencia SOLO de desarrollo/pruebas: no llega al bundle de producción. Sus dependencias transitivas (playwright-core, etc.) están cubiertas por la auditoría de licencias del CI. Los navegadores los instala Playwright en el runner de CI, no en el lockfile.
 
 ## Dependencias directas — desarrollo (apps/web)
 
