@@ -1,10 +1,10 @@
 /**
- * LBA_Restaurant_Engine — pantalla base (FASE 01).
+ * LBA_Restaurant_Engine — pantalla base (FASE 01, editor desde FASE 03).
  *
  * Layout minimalista de la guía (regla 15): controles de simulación arriba,
  * barra de herramientas izquierda, lienzo central, inspector a la derecha y
- * eventos/estadísticas abajo. Los paneles de fases futuras son marcadores
- * deshabilitados con explicación.
+ * eventos/estadísticas abajo. Los paneles de fases futuras siguen siendo
+ * marcadores deshabilitados con explicación.
  */
 import { useState } from 'react'
 import type { Logger } from './logger/core'
@@ -12,6 +12,8 @@ import type { LogStore } from './logger/store'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LogPanel } from './components/LogPanel'
 import { PlaceholderPanel } from './components/PlaceholderPanel'
+import { EditorApp } from './editor/EditorApp'
+import { createEditorStore } from './editor/useEditorStore'
 
 /** Controles de simulación previstos (se activan en la fase 04). */
 const SIM_CONTROLS = [
@@ -29,6 +31,7 @@ interface AppProps {
 
 export function App({ store, logger }: AppProps): React.JSX.Element {
   const [showLogs, setShowLogs] = useState(false)
+  const editorStore = createEditorStore()
 
   return (
     <ErrorBoundary logger={logger}>
@@ -50,30 +53,8 @@ export function App({ store, logger }: AppProps): React.JSX.Element {
           </div>
         </header>
 
-        <div className="app__main">
-          <aside className="app__toolbar" aria-label="Barra de herramientas">
-            <PlaceholderPanel
-              title="Herramientas"
-              description="Dibujo de paredes, puertas, ventanas, mesas, sillas y equipos del catálogo."
-              phase="fase 03 (editor 2D)"
-            />
-          </aside>
-
-          <main className="app__canvas" aria-label="Lienzo 2D">
-            <PlaceholderPanel
-              title="Lienzo 2D"
-              description="Aquí se dibujará y editará el plano del restaurante con ajuste a cuadrícula."
-              phase="fase 03 (editor 2D)"
-            />
-          </main>
-
-          <aside className="app__inspector" aria-label="Inspector de propiedades">
-            <PlaceholderPanel
-              title="Inspector"
-              description="Propiedades del objeto seleccionado: dimensiones, rotación, zona y parámetros."
-              phase="fase 03 (editor 2D)"
-            />
-          </aside>
+        <div className="app__body">
+          <EditorApp store={editorStore} />
         </div>
 
         <footer className="app__footer">
