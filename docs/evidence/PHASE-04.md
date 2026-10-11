@@ -3,7 +3,7 @@
 - Estado: `APROBADA (pendiente de publicación; ver §Verificación previa al merge)`
 - Fecha UTC: 2026-10-12
 - Rama y PR: `feat/phase-04-motor-simulacion` (PR en curso de publicación)
-- Commit SHA exacto: `b124d6f` (punta de código; el cierre documental viaja en un commit adicional de la misma rama y el SHA del merge se registrará al publicar)
+- Commit SHA exacto: `eeed811` (punta de rama: prompts 04.1–04.4 + corrección de tipos de las mediciones; el SHA del merge se registrará al publicar)
 - Workflow de GitHub Actions: se ejecutará sobre el push de la rama y el PR (job «Calidad» + job «E2E»)
 - Artefacto(s) de evidencia: `lba-ci-evidence-<sha>` (JUnit por workspace, cobertura, informe de licencias), `lba-build-<sha>` y `lba-e2e-evidence-<sha>` (FASE 03)
 - Archivo de fase y revisión: `docs/guia/FASES/FASE_04_MOTOR_SIMULACION.md` (prompts 04.1–04.4); ejecutado por el agente bajo la instrucción del propietario de continuidad autónoma (2026-10-11, registrada en `PHASE-01.md`; la fase anterior quedó APROBADA e integrada en `d4773eb`)
