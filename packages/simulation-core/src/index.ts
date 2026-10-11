@@ -25,3 +25,22 @@ export {
   type EngineErrorContext,
   type EngineErrorCode,
 } from './errors'
+export { Rng, createRng } from './random'
+export {
+  ResourcePool,
+  type ResourceDefinition,
+  type Reservation,
+  type ResourceRequest,
+  type ReserveResult,
+  type ResourceInfo,
+} from './resources'
+export {
+  TaskScheduler,
+  TASK_COMPLETE_EVENT,
+  createTaskScheduler,
+  type TaskState,
+  type TaskDefinition,
+  type TaskInstance,
+  type BlockedInfo,
+  type SchedulerSummary,
+} from './tasks'

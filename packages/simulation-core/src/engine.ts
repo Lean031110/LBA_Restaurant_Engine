@@ -43,6 +43,7 @@ import { SimulationClock } from './clock'
 import { EventQueue, type ScheduledEvent } from './queue'
 import { EventLog, type LogEntry } from './log'
 import { EngineError, EngineErrorCodes } from './errors'
+import { createRng, type Rng } from './random'
 
 /** Versión del motor (se registra en cada exportación; contrato sección 8). */
 export const ENGINE_VERSION = '0.1.0'
@@ -112,6 +113,8 @@ export class SimulationEngine {
   private readonly maxTime: number
   private pausado = false
   private estado: EngineState = 'idle'
+  private readonly rng: Rng
+  private readonly alRestablecer: Array<() => void> = []
 
   constructor(options: EngineOptions = {}) {
     const { seed = 0, maxEvents = 1_000_000, maxTime = Number.POSITIVE_INFINITY } = options
@@ -139,6 +142,22 @@ export class SimulationEngine {
     this.seed = seed
     this.maxEvents = maxEvents
     this.maxTime = maxTime
+    this.rng = createRng(seed)
+  }
+
+  /** Generador reproducible de la corrida (misma semilla ⇒ misma secuencia). */
+  get generador(): Rng {
+    return this.rng
+  }
+
+  /**
+   * Suscribe una función al reset del motor (la usan los subsystemas como
+   * el planificador de tareas para limpiar su estado). Las suscripciones son
+   * configuración: se conservan entre corridas.
+   */
+  onReset(fn: () => void): this {
+    this.alRestablecer.push(fn)
+    return this
   }
 
   /** Tiempo simulado actual (segundos). */
@@ -351,8 +370,9 @@ export class SimulationEngine {
 
   /**
    * Reinicia por completo: reloj a 0, cola vacía, registro vacío, pausa
-   * retirada. Elimina tareas y reservas del run anterior (04.2). Conserva
-   * handlers y semilla (configuración, no estado de corrida).
+   * retirada y generador re-sembrado. Elimina tareas y reservas del run
+   * anterior (vía suscripciones onReset). Conserva handlers, suscripciones
+   * y semilla (configuración, no estado de corrida).
    */
   reset(): void {
     this.clock.reset()
@@ -360,12 +380,8 @@ export class SimulationEngine {
     this.registro.clear()
     this.pausado = false
     this.estado = 'idle'
-    this.alReset()
-  }
-
-  /** Gancho para subsystemas (tareas/recursos en 04.2): limpiar su estado. */
-  protected alReset(): void {
-    // Lo extiende el registro de tareas/recursos; el núcleo no tiene nada más.
+    this.rng.reseed(this.seed)
+    for (const fn of this.alRestablecer) fn()
   }
 
   /** Eventos pendientes ordenados (copia de diagnóstico; no muta la cola). */
