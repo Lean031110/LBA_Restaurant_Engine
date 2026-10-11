@@ -15,7 +15,11 @@ export default defineConfig({
   workers: 1,
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'test-results/html-report', open: 'never' }],
+    // El informe HTML vive FUERA de test-results (outputDir): Playwright limpia
+    // su carpeta al regenerarse y anidarla dentro provocaría pérdida de
+    // artefactos de fallo (advertencia de configuración en Playwright ≥1.55).
+    // 'playwright-report' ya está en .gitignore y se sube como artefacto de CI.
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
   use: {
@@ -27,7 +31,13 @@ export default defineConfig({
   },
   webServer: {
     command: 'npx vite preview --port 4173 --strictPort',
-    cwd: '../apps/web',
+    // Playwright resuelve `cwd` relativo al DIRECTORIO DE ESTE CONFIG
+    // (tests/e2e), no al directorio del proceso: desde tests/e2e se necesitan
+    // DOS niveles hacia arriba para llegar a apps/web. Con un solo '..' el
+    // servidor apuntaba a tests/apps/web (inexistente) y el arranque fallaba
+    // con «spawn /bin/sh ENOENT» salvo que ya hubiera un servidor en el puerto
+    // (reuseExistingServer), lo que enmascaraba el defecto.
+    cwd: '../../apps/web',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

@@ -136,7 +136,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E del editor 2D (Playwright)
-        run: npm run test --workspace @lba/tests-e2e
+        run: npm run test:e2e --workspace @lba/tests-e2e
 
       # Evidencias E2E: capturas antes/después, trazas de fallos y reportes.
       - name: Subir evidencias E2E (capturas, trazas, reportes)
@@ -146,5 +146,6 @@ jobs:
           name: lba-e2e-evidence-${{ github.sha }}
           path: |
             tests/e2e/test-results/
+            tests/e2e/playwright-report/
           retention-days: 30
           if-no-files-found: warn
