@@ -1,11 +1,11 @@
 # Cierre de fase 04 — Motor de eventos discretos, reproducible y desacoplado
 
-- Estado: `APROBADA (pendiente de publicación; ver §Verificación previa al merge)`
-- Fecha UTC: 2026-10-12
-- Rama y PR: `feat/phase-04-motor-simulacion` (PR en curso de publicación)
-- Commit SHA exacto: `eeed811` (punta de rama: prompts 04.1–04.4 + corrección de tipos de las mediciones; el SHA del merge se registrará al publicar)
-- Workflow de GitHub Actions: se ejecutará sobre el push de la rama y el PR (job «Calidad» + job «E2E»)
-- Artefacto(s) de evidencia: `lba-ci-evidence-<sha>` (JUnit por workspace, cobertura, informe de licencias), `lba-build-<sha>` y `lba-e2e-evidence-<sha>` (FASE 03)
+- Estado: `APROBADA (integrada en main ad06e76; ver §Registro post-integración)`
+- Fecha UTC: 2026-10-12 (ejecución, publicación y registro)
+- Rama y PR: `feat/phase-04-motor-simulacion` → PR [#11](https://github.com/Lean031110/LBA_Restaurant_Engine/pull/11) (squash merge)
+- Commit SHA exacto: punta de rama `7d04d905abea0beb16ae60cf7c0f330ca02b7a20` (prompts 04.1–04.4 + corrección de tipos + cierre); merge squash en `main` = `ad06e76abc2ce538086ab7582349d374a7900609`
+- Workflow de GitHub Actions: ejecutado y verificado job a job — push de rama [run 38172566417](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172566417), pull_request [run 38172596016](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172596016) y post-merge [run 38172789403](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172789403) — job «Calidad» 17/17 pasos y job «E2E» 11/11 pasos, todos success
+- Artefacto(s) de evidencia: `lba-ci-evidence-fb9aebe` (JUnit 657/657, cobertura, informe de licencias 238 OK), `lba-build-fb9aebe` y `lba-e2e-evidence-fb9aebe` (E2E 7/7) — descargados e inspeccionados
 - Archivo de fase y revisión: `docs/guia/FASES/FASE_04_MOTOR_SIMULACION.md` (prompts 04.1–04.4); ejecutado por el agente bajo la instrucción del propietario de continuidad autónoma (2026-10-11, registrada en `PHASE-01.md`; la fase anterior quedó APROBADA e integrada en `d4773eb`)
 
 ## Cambios realizados
@@ -57,7 +57,7 @@
 
 - Estrés y reloj (salida de Vitest, reproducible con `npm test -w @lba/simulation-core`): `[estrés A] 120000 eventos despachados en 1629.5 ms` · `[estrés B] 131071 eventos en cascada despachados en 807.9 ms` · `[estrés C] 2000 tareas con dependencias completadas en 3197.4 ms` · `[reloj real] 3599 s simulados … en 0.0 ms reales`.
 - JUnit por workspace en `*/test-results/junit.xml` (subidos como artefacto de CI); cobertura HTML/LCOV por paquete (`packages/simulation-core/coverage/`).
-- GitHub Actions (al publicar): los enlaces reales de runs y artefactos se añadirán tras la publicación, como en las fases 01–03.
+- GitHub Actions (ejecutado): runs [38172566417](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172566417) (push), [38172596016](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172596016) (pull_request) y [38172789403](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172789403) (post-merge en `main` = `ad06e76`) — Calidad 17/17 y E2E 11/11 pasos, todos success. Artefactos `lba-ci-evidence-fb9aebe` (id 11714900506: JUnit 657/657 por workspace, cobertura, licencias 238), `lba-e2e-evidence-fb9aebe` (id 11714551794: E2E 7/7) y `lba-build-fb9aebe` (id 11715155011) descargados e inspeccionados.
 
 ## Licencias, assets y supply chain
 
@@ -73,20 +73,32 @@
 ## Riesgos/diferencias
 
 - Requisitos parcialmente implementados: ninguno de los criterios obligatorios. Las limitaciones 1–3 son de rendimiento/alcance documentado, no incumplimientos.
-- Pruebas que no pudieron ejecutarse: ninguna en local. Las de GitHub Actions quedan pendientes del push (se registran al publicar, conforme al protocolo).
+- Pruebas que no pudieron ejecutarse: ninguna. Las de GitHub Actions se ejecutaron y verificaron job a job sobre el SHA exacto (runs 38172566417, 38172596016 y post-merge 38172789403, todos success; ver §Registro post-integración).
 - Supuestos de simulación no medidos: ninguno nuevo — la fase NO añade semántica de cocina (recetas/equipos llegan en FASE 05); las duraciones usadas en integración provienen de las `SecondsParameter` declaradas del fixture (regla 10: estimaciones con procedencia, no mediciones físicas).
 - Cambios de alcance con ADR: no aplica (sin ADR nuevo; las decisiones — dirección de la prioridad en empates, LIFO en liberación, fallo explícito de dependientes con `dependency_failed`, arranque automático `(priority DESC, taskId ASC)` — están documentadas en las cabeceras de `queue.ts`, `resources.ts` y `tasks.ts`).
 
 ## Verificación previa al merge (política de integración)
 
-Conforme a la autorización expresa del propietario (2026-10-09), el merge (squash) de un PR solo se ejecuta si TODO lo siguiente se verifica — estado local actual y plan de publicación:
+Conforme a la autorización expresa del propietario (2026-10-09), el merge (squash) de un PR solo se ejecuta si TODO lo siguiente se verifica — verificación REAL ejecutada el 2026-10-12 antes del merge del PR #11:
 
-- [x] Checks obligatorios en verde sobre el SHA final exacto — pendiente de ejecución en Actions tras el push (local: 10/10 pasos OK, 657 pruebas + 7 E2E).
-- [ ] Conflictos de integración resueltos preservando los cambios válidos de ambas partes; GitHub informa el PR como fusionable (avance puro desde `main`; se verificará antes del merge).
-- [ ] La integración no pierde cambios válidos de `main` (diff remoto↔local idéntico).
-- [ ] Pruebas y auditorías (licencias, seguridad) ejecutadas y en verde; sin aserciones debilitadas (los tiempos son EXACTOS; la reproducibilidad exige igualdad de historial).
-- [ ] Evidencias y artefactos publicados e inspeccionados (descarga y lectura de los JUnit, cobertura, licencias, como en las fases 01–03).
-- [ ] Sin problemas de seguridad pendientes que invaliden la entrega (0 vulns; sin secretos).
+- [x] Checks obligatorios en verde sobre el SHA final exacto `7d04d905abea0beb16ae60cf7c0f330ca02b7a20`: run push [38172566417](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172566417) y run pull_request [38172596016](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172596016) (Calidad 17/17 + E2E 11/11), inspeccionados paso a paso vía API.
+- [x] Conflictos de integración: ninguno — GitHub informó `mergeable=true`; avance puro (merge-base = `951fa0f` = `main`).
+- [x] La integración no pierde cambios válidos de `main`: diff remoto ↔ local de la rama VACÍO (árboles idénticos); diff del PR = 29 archivos, +4130/−23.
+- [x] Pruebas y auditorías ejecutadas y en verde: 657/657 + 7/7 E2E en Actions; 238 licencias OK; 0 vulnerabilidades; sin aserciones debilitadas (tiempos EXACTOS; reproducibilidad por igualdad de historial).
+- [x] Evidencias y artefactos publicados e inspeccionados: descarga y lectura de los JUnit (657 + 7), cobertura por paquete (simulation-core 94.58/89.14 en CI, idéntica a local) e informe de licencias.
+- [x] Sin problemas de seguridad pendientes que invaliden la entrega (0 vulns; sin secretos). El estado externo «Vercel: failure» es preexistente en `main` y ajeno al protocolo (documentado en el PR #11).
+
+## Registro post-integración
+
+Publicación completada el **2026-10-12** conforme al protocolo (push → PR → Actions job a job sobre SHA exacto → artefactos inspeccionados → diff remoto↔local → squash merge → CI post-merge):
+
+- **PR**: [#11](https://github.com/Lean031110/LBA_Restaurant_Engine/pull/11) — 7 commits, 29 archivos, +4130/−23; punta `7d04d905abea0beb16ae60cf7c0f330ca02b7a20`; base `951fa0f`.
+- **Runs de Actions** (todos success, inspeccionados job a job y paso a paso vía API): push [38172566417](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172566417) (Calidad 17/17); pull_request sobre merge-ref `fb9aebe` [38172596016](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172596016) (Calidad 17/17 + E2E 11/11); post-merge en `main` [38172789403](https://github.com/Lean031110/LBA_Restaurant_Engine/actions/runs/38172789403) sobre `ad06e76abc2ce538086ab7582349d374a7900609` (Calidad 17/17 + E2E 11/11).
+- **Artefactos descargados e inspeccionados** (run pull_request): `lba-ci-evidence-fb9aebe` (id 11714900506, 1 019 772 B): JUnit por workspace **657/657** (104 web + 68 asset-catalog + 137 domain + 147 editor-2d + 71 persistence + **100 simulation-core** + 30 integration, 0 fallos), cobertura simulation-core **94.58/89.14** (idéntica a la medición local), informe de licencias **238 paquetes, 0 no permitidas**; `lba-e2e-evidence-fb9aebe` (id 11714551794): E2E **7/7** (regresión de FASE 03 intacta); `lba-build-fb9aebe` (id 11715155011): build de producción.
+- **Merge**: squash merge del PR #11 → `main` = `ad06e76abc2ce538086ab7582349d374a7900609`; rama remota eliminada automáticamente; `main` local sincronizado.
+- **Observación externa**: la app de Vercel conectada por el propietario reporta «deployment failed» tanto en este SHA como en `main` (`951fa0f`) — condición preexistente de la configuración del proyecto en Vercel (monorepo: probablemente falta Root Directory `apps/web`), ajena a este PR y al protocolo de verificación (los jobs de Actions). Se deja constancia para que el propietario lo configure en su panel o pida su integración explícita.
+- **Defectos nuevos durante la publicación**: uno menor detectado y corregido ANTES del push — el typecheck global detectó que `stress.test.ts` usaba los globales `performance`/`console` sin tipos (lib ES2022 pura); corregido con `"types": ["node"]` (convención del repo, commit `eeed811`). Ningún defecto adicional durante la integración.
+- **Criterios de cierre de fase**: 5/5 obligatorios y 4/4 mínimos en PASS con evidencia publicada; FASE 04 APROBADA e integrada.
 
 ## Decisión
 
