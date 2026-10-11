@@ -2,7 +2,7 @@
   "name": "@lba/tests-integration",
   "version": "0.1.0",
   "private": true,
-  "description": "Pruebas de integración del flujo completo entre @lba/domain, @lba/asset-catalog y @lba/persistence (FASE 02): escenario válido → validación → consulta de catálogo → exportación → importación → comparación de datos; escenarios inválidos y migraciones fallidas.",
+  "description": "Pruebas de integración del flujo completo entre @lba/domain, @lba/asset-catalog, @lba/persistence (FASE 02: escenario válido → validación → catálogo → exportación → importación; inválidos y migraciones) y @lba/simulation-core (FASE 04: el motor ejecuta en Node el grafo de tareas del escenario real con invariantes y determinismo).",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -11,7 +11,8 @@
   "dependencies": {
     "@lba/asset-catalog": "0.1.0",
     "@lba/domain": "0.1.0",
-    "@lba/persistence": "0.1.0"
+    "@lba/persistence": "0.1.0",
+    "@lba/simulation-core": "0.1.0"
   },
   "devDependencies": {
     "typescript": "6.0.3",
