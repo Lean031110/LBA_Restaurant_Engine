@@ -151,6 +151,23 @@ describe('EditorApp — atajos de teclado (03.3)', () => {
     expect(store.getState().document.selection.objectIds).toEqual([b])
   })
 
+  it('Ctrl+S guarda el escenario con la operación compartida de fichero', () => {
+    const store = montar()
+    placeTable(store)
+    const clicks: string[] = []
+    const anchorClick = HTMLAnchorElement.prototype.click
+    HTMLAnchorElement.prototype.click = function (this: HTMLAnchorElement) {
+      clicks.push(this.download)
+    }
+    try {
+      fireEvent.keyDown(window, { key: 's', ctrlKey: true })
+      expect(clicks).toHaveLength(1)
+      expect(clicks[0]).toBe('local-nuevo.json')
+    } finally {
+      HTMLAnchorElement.prototype.click = anchorClick
+    }
+  })
+
   it('? abre y cierra la ayuda con la tabla de atajos', () => {
     montar()
     fireEvent.keyDown(window, { key: '?' })

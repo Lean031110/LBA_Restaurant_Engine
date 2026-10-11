@@ -5,13 +5,9 @@
  */
 import { useRef } from 'react'
 import type { EditorStore } from '@lba/editor-2d'
-import {
-  GRID_SIZE_OPTIONS,
-  formatLength,
-  parseScenarioJson,
-  serializeScenario,
-} from '@lba/editor-2d'
+import { GRID_SIZE_OPTIONS, formatLength } from '@lba/editor-2d'
 import type { GridConfig } from '@lba/editor-2d'
+import { loadScenarioFile, saveScenarioFile } from './fileIO'
 import { useEditorValue } from './useEditorStore'
 
 interface TopBarProps {
@@ -35,47 +31,9 @@ export function TopBar({ store, onFitView }: TopBarProps) {
   const zoom = useEditorValue(store, (s) => Math.round(s.view.pixelsPerUnit))
   const grid = useEditorValue(store, (s) => s.grid)
 
-  const handleSave = () => {
-    const result = serializeScenario(store.getState().document.scenario)
-    if (!result.ok) {
-      store.pushMessage('error', result.error)
-      return
-    }
-    // Descarga local de un fichero JSON determinista (sin servidor, regla 9).
-    const blob = new Blob([result.json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    const safeName = store
-      .getState()
-      .document.scenario.id.replace(/^scn_/, '')
-      .replace(/[^a-z0-9-]/gi, '-')
-    anchor.href = url
-    anchor.download = `${safeName}.json`
-    anchor.click()
-    URL.revokeObjectURL(url)
-    store.pushMessage('info', `Escenario guardado como ${safeName}.json.`)
-  }
-
-  const handleLoadFile = async (file: File) => {
-    try {
-      const text = await file.text()
-      const result = parseScenarioJson(text)
-      if (result.ok) {
-        store.loadScenario(result.data, 'Escenario cargado')
-      } else {
-        const shown = result.issues
-          .slice(0, 3)
-          .map((i) => `${i.path}: ${i.message}`)
-          .join(' · ')
-        store.pushMessage(
-          'error',
-          `El fichero no es un escenario válido (${result.issues.length} problemas): ${shown}${result.issues.length > 3 ? '…' : ''}. El plano actual NO se ha modificado.`,
-        )
-      }
-    } catch (error) {
-      store.pushMessage('error', `No se pudo leer el fichero: ${String(error)}`)
-    }
-  }
+  // Guardar/cargar usan las operaciones compartidas de fichero (fileIO.ts),
+  // las mismas que los atajos Ctrl+S / Ctrl+O (una sola implementación).
+  const handleLoadFile = (file: File) => void loadScenarioFile(store, file)
 
   const setGrid = (patch: Partial<GridConfig>) => store.setGrid(patch)
 
@@ -117,7 +75,7 @@ export function TopBar({ store, onFitView }: TopBarProps) {
       <div className="topbar__group" role="group" aria-label="Archivo">
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => saveScenarioFile(store)}
           title="Guardar escenario como JSON (Ctrl+S)"
           data-testid="save-button"
         >
@@ -140,7 +98,7 @@ export function TopBar({ store, onFitView }: TopBarProps) {
           data-testid="load-input"
           onChange={(e) => {
             const file = e.target.files?.[0]
-            if (file) void handleLoadFile(file)
+            if (file) handleLoadFile(file)
             e.target.value = ''
           }}
         />

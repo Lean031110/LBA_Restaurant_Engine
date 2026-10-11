@@ -109,12 +109,15 @@ export function CanvasStage({ store }: CanvasStageProps) {
   })
   useEffect(() => {
     const transformer = transformerRef.current
-    if (!transformer) return
+    // Salvaguarda: en pruebas el Transformer es una silueta DOM sin API de
+    // Konva (la rotación real la cubren las E2E); y en producción el ref
+    // puede aún no estar listo.
+    if (!transformer || typeof transformer.nodes !== 'function') return
     const nodes = transformableIds
       .map((id) => nodeRefs.current.get(id))
       .filter((n): n is Konva.Node => n !== undefined)
     transformer.nodes(nodes)
-    const layer = transformer.getLayer()
+    const layer = transformer.getLayer?.()
     layer?.batchDraw()
   }, [transformableIds, model])
 
