@@ -7,6 +7,7 @@
  * marcadores deshabilitados con explicación.
  */
 import { useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import type { Logger } from './logger/core'
 import type { LogStore } from './logger/store'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -77,6 +78,7 @@ export function App({ store, logger }: AppProps): React.JSX.Element {
           </button>
         </footer>
       </div>
+      <Analytics />
     </ErrorBoundary>
   )
 }
